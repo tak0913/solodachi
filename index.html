@@ -244,11 +244,33 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
 .sb small{display:block;font-size:10px;font-weight:400;color:var(--muted)}
 .sb.on{background:var(--acc);color:var(--accText);border-color:var(--acc)}
 .sb.on small{color:#5b3a0c}
+.seg{display:flex;gap:6px;margin-bottom:10px}
+.seg button{flex:1;padding:9px 6px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:13px;font-weight:700;cursor:pointer}
+.seg button.on{background:var(--acc);color:var(--accText);border-color:var(--acc)}
+.phhead{display:flex;align-items:center;gap:8px}
+.phhead .sm{flex:0 0 auto;width:40px}
+.phname{flex:1;text-align:center;font-weight:800;font-size:15px}
+.phname small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
+.phchord{font-size:12px;color:var(--muted);margin:8px 0 4px}
+.tabwrap{overflow-x:auto}
+.tabgrid{display:grid;grid-template-columns:44px repeat(16,minmax(17px,1fr));margin-bottom:8px;font-family:ui-monospace,Menlo,monospace;font-size:11px;min-width:330px}
+.tabgrid .tl{font-size:9px;color:var(--muted);display:flex;align-items:center;white-space:nowrap}
+.tabgrid .tc{height:18px;display:flex;align-items:center;justify-content:center;position:relative;color:var(--text);transition:background .1s}
+.tabgrid .beat{color:var(--muted);font-size:10px}
+.tabgrid .arr{color:var(--acc);font-size:12px}
+.tabgrid .pmr{color:var(--muted);font-size:9px}
+.tabgrid [class*="str"]{background:linear-gradient(transparent 8.5px,rgba(255,255,255,.28) 8.5px,rgba(255,255,255,.28) 9.5px,transparent 9.5px)}
+.tabgrid .on span,.tabgrid .str.on,.tabgrid [class*="str"].on{font-weight:800;color:#fff}
+.tabgrid [class*="str"].on{background:var(--card);border-radius:4px;box-shadow:0 0 0 1px var(--line) inset}
+.tabgrid .now{background:rgba(245,160,42,.28)!important;border-radius:3px}
+.tabhelp{margin-top:6px;font-size:12px}
+.tabhelp p{margin:4px 0}
+.cell.phit::after{content:'';position:absolute;inset:4px;border-radius:50%;box-shadow:0 0 0 3px #fff,0 0 14px 4px rgba(255,255,255,.7);z-index:2;pointer-events:none}
 </style>
 </head>
 <body>
 <header class="top">
-  <div class="brand">Solodachi <span>v0.17</span></div>
+  <div class="brand">Solodachi <span>v0.18</span></div>
   <div class="nowc" id="nowchord"></div>
   <button class="play" id="play">▶ 伴奏</button>
 </header>
@@ -280,6 +302,23 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
     <span><i class="ring"></i>スケールの音</span>
   </div>
   </div>
+  <div class="card" id="phrasecard" hidden>
+    <div class="phhead">
+      <button class="sm" id="phprev" aria-label="前のフレーズ">◀</button>
+      <div class="phname" id="phname"></div>
+      <button class="sm" id="phnext" aria-label="次のフレーズ">▶</button>
+    </div>
+    <div class="lvdesc" id="phdesc"></div>
+    <div class="phchord" id="phchord"></div>
+    <div class="tabwrap" id="phtab"></div>
+    <div class="note" id="phodd" hidden>変拍子のコードでは、フレーズはお休みしてふつうの伴奏になるよ。</div>
+    <details class="tabhelp"><summary>TAB譜の見方 <span class="en">how to read tabs</span></summary>
+      <p>横の線が弦(上が1弦=一番細い弦)。数字は押さえるフレット(0は何も押さえない)。上の段の1〜4は拍。</p>
+      <p>↓↑ はピックを振る向き。<b>x</b> は左手を弦に軽く触れて「チャッ」と鳴らすミュート。<b>PM</b> は右手の手のひらで弦を軽く押さえるブリッジミュート。</p>
+      <p><b>b</b> はチョーキング(弦を押し上げて音を上げる)、<b>h</b> はハンマリング(指で叩いて鳴らす)、<b>/</b> は下から滑り込むスライド。</p>
+      <p>再生中は、今鳴ってる場所が指板とTAB譜の両方で光る。お手本を消して自分で弾くときは、下の「パート」でギターをオフにしてね。</p>
+    </details>
+  </div>
   <div class="card">
     <div class="fbk" id="fbk">マスをタップすると音が鳴って、今のコードに合ってるかがここに出るよ。</div>
     <div class="stats" id="stats"></div>
@@ -296,7 +335,7 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
       <div class="tracks">
         <button class="trk" data-t="drums">ドラム<small>drums</small></button>
         <button class="trk" data-t="bass">ベース<small>bass</small></button>
-        <button class="trk" data-t="gtr">コード<small>chords</small></button>
+        <button class="trk" data-t="gtr">ギター<small>guitar</small></button>
       </div>
     </div>
     <div class="note">1つずつ消すと、それぞれの役割が聞こえる。音が出ないときはマナーモードをオフに。</div>
@@ -313,8 +352,12 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
   <button class="play big" id="allrandom" style="margin:0 0 12px">ぜんぶおまかせ(押すたびに新しい組み合わせ)</button>
   <div class="panel">
     <div class="ttl"><span>① ジャンル <span class="en">genre</span></span></div>
-    <div class="genres" id="genres"></div>
-    <div id="subs"></div>
+    <div class="seg" id="pickmode"><button data-m="genre">ジャンルで選ぶ</button><button data-m="artist">アーティスト風で選ぶ</button></div>
+    <div id="genrepick"><div class="genres" id="genres"></div><div id="subs"></div></div>
+    <div id="artistpick" hidden>
+      <div class="note" style="margin:0 0 8px">好きなアーティストっぽい進行・リズム・音色・ギターの弾き方(リフやカッティング)をまとめて読み込む。名前は「参考」。まねして終わりにせず、気分やキーを変えて自分の曲にしていこう。</div>
+      <div class="subgrid" id="artists"></div>
+    </div>
   </div>
   <div class="panel">
     <div class="ttl"><span>② 気分とキー</span><span id="keyname"></span></div>
@@ -525,7 +568,13 @@ const GENRES={
     point:'ヨナ抜き(5つの音)はカントリーとも相性がいい。明るく素朴に。'},
   edm:{en:'EDM / dance',name:'EDM',bpm:124,bars:2,moods:['minor','major','lydian','yonanuki','minpenta','dorian','mixolydian','phrygian','harmonic','melodic','phrygdom','ryukyu','miyako'],style:'add9',rev:0.3,tone:'clean',
     desc:'4つ打ち(毎拍キック)のダンスミュージック。シンセの厚い和音と、裏拍のハイハットが特徴。',
-    point:'ギターは短いフレーズを繰り返すと、シンセとよく混ざる。'}
+    point:'ギターは短いフレーズを繰り返すと、シンセとよく混ざる。'},
+  folk:{en:'folk / acoustic',name:'フォーク・弾き語り',bpm:96,bars:2,moods:['major','yonanuki','minor','mixolydian','dorian','lydian','minpenta','phrygian','harmonic','melodic','phrygdom','ryukyu','miyako'],style:'triad',rev:0.14,tone:'acoustic',
+    desc:'ギター1本で歌う、いちばん身近なスタイル。コードを押さえてかき鳴らす(ストローク)だけで曲になる。',
+    point:'ストロークは「ダウンは強く、アップは軽く」。弾かない拍も腕を止めずに振り続けよう。'},
+  artist:{en:'artist style',name:'アーティスト風',hidden:true,pat:'jrock',bpm:130,bars:2,moods:['major','minor','mixolydian','minpenta','dorian','lydian','yonanuki','phrygian','harmonic','melodic','phrygdom','ryukyu','miyako'],style:'triad',rev:0.16,tone:'dist',
+    desc:'好きなアーティストっぽい進行・リズム・音色・ギターの弾き方をまとめて選べる。',
+    point:'まねして終わりじゃなく、気分やキーを変えて自分の曲にしていこう。'}
 };
 // トレンドパック用:キーの外から借りてくる「スパイス」コード
 const SP3={r:4,q:'',ro:'III',role:'スパイス(キーの外の明るいコード)',spice:true};
@@ -591,6 +640,69 @@ const PRESETS={
     major:[['【トレンド】丸サ進行(Just the Two of Us)IVmaj7–III7–vi7',[3,SP37,5,5]],['ジャジー ii7–V7–Imaj7',[1,4,0,0]],['チル IVmaj7–iii7–vi7',[3,2,5,5]],['朝 Imaj7–vi7',[0,5]],['ふわふわ IVmaj7–Imaj7',[3,0]]]
   }
 };
+/* ================= フレーズ(リフ・カッティング・アルペジオ) =================
+   1小節=16マス(16分音符)。s=何マス目 / d=長さ(マス)
+   n:単音(n=コードのルートから何半音上、'c3''c5''c7''c9'=コードの3度・5度・7度・9度) / a:コードの何番目の音
+   c:コードを鳴らす / x:ミュート(チャッ) / pm:ブリッジミュート
+   set=どの弦を使うか(full全部・top高い弦・top2高い2本・pw パワーコード・low低い2本・oct オクターブ・drone 高い2本を固定) */
+const pN=(s,n,d,x={})=>({s,k:'n',n,d,...x}),pA=(s,v,d,x={})=>({s,k:'a',v,d,...x}),
+  pC=(s,dir,set,d,x={})=>({s,k:'c',dir,set,d,...x}),pX=(s,dir,set)=>({s,k:'x',dir,set}),pM=(s,set,x={})=>({s,k:'pm',set,...x});
+const PH={
+  bz_riff:{name:'ハードロックの単音リフ',type:'リフ riff',bars:1,
+    desc:'マイナーペンタ(5つの音)だけで作るリフ。後半の半音ずつ下がるところ(♭5)がブルージーな味。低い弦でゴリッと弾こう。',
+    ev:[pN(0,0,2,{acc:1}),pN(2,0,1),pN(3,3,1),pN(4,5,2),pN(6,0,1),pN(7,3,1),pN(8,5,1),pN(9,7,3,{acc:1}),pN(12,6,1),pN(13,5,1),pN(14,3,1),pN(15,0,1)]},
+  bz_chug:{name:'パワーコードの刻み+キメ',type:'カッティング',bars:1,
+    desc:'前半はブリッジミュート(PM:手のひらで弦を軽く押さえる)でザクザク刻んで、後半はコードを鳴らしきる「キメ」。ハードロックの基本の形。',
+    ev:[pC(0,'d','pw',2,{acc:1}),pM(2,'pw'),pM(3,'pw'),pM(4,'pw'),pM(6,'pw'),pM(7,'pw'),pC(8,'d','pw',3,{acc:1}),pC(11,'d','pw',3),pC(14,'d','pw',2,{acc:1})]},
+  bz_bend:{name:'ソロのお約束(チョーキング)',type:'ソロ solo',bars:2,
+    desc:'チョーキング(bend:弦を押し上げて音程を上げる。TABの「b」)で泣かせる、ギターソロの定番。2フレット分(1音)上げるのが目標。',
+    ev:[pN(0,17,4,{b:2,acc:1}),pN(4,15,2),pN(6,12,2),pN(8,15,1),pN(9,17,1),pN(10,15,2),pN(12,12,4),pN(16,22,2,{acc:1}),pN(18,19,2),pN(20,17,4,{b:2}),pN(24,15,2),pN(26,12,6)]},
+  tk_tap:{name:'ハイトーンの速いアルペジオ',type:'アルペジオ arpeggio',bars:1,
+    desc:'コードの高い音を16分音符で細かく回す。きらきらした高音と、後ろの轟音のギャップがこのスタイルの肝。',
+    ev:[...Array(16)].map((_,i)=>pA(i,[3,4,5,4][i%4],1,{o:12,acc:i%4===0}))},
+  tk_cut:{name:'轟音の16分カッティング',type:'カッティング',bars:1,
+    desc:'鳴らす音(数字)とミュート(x:弦に軽く触れて「チャッ」)を細かく混ぜる。鋭く短く切るとキレが出る。',
+    ev:[pC(0,'d','full',1,{acc:1}),pX(1,'u','full'),pX(2,'d','full'),pC(3,'u','full',1),pX(4,'d','full'),pX(5,'u','full'),pC(6,'d','full',1,{acc:1}),pC(7,'u','full',1),pC(8,'d','full',2,{acc:1}),pX(10,'d','full'),pC(11,'u','full',1),pX(12,'d','full'),pX(13,'u','full'),pC(14,'d','full',1,{acc:1}),pC(15,'u','full',1)]},
+  tk_kime:{name:'止めて爆発するキメ',type:'キメ',bars:1,
+    desc:'バンド全員で同じタイミングに鳴らして、ピタッと止める「キメ」。止めたあとの静けさが、次の音を大きく聞かせる。',
+    ev:[pC(0,'d','full',1,{acc:1}),pC(3,'d','full',1,{acc:1}),pC(6,'d','full',1,{acc:1}),pC(10,'d','full',6,{acc:1})]},
+  strum:{name:'王道ストローク',type:'ストローク strumming',bars:1,
+    desc:'「ジャーン・ジャ・ジャ・ジャジャ」のおなじみの形。腕は16分音符でずっと上下に振って、鳴らすところだけ弦に当てる。',
+    ev:[pC(0,'d','full',4,{acc:1}),pC(4,'d','full',2),pC(6,'u','full',4),pC(10,'u','full',2),pC(12,'d','full',2,{acc:1}),pC(14,'u','full',2)]},
+  drone:{name:'高い2本を鳴らしっぱなし',type:'ストローク strumming',bars:1,
+    desc:'1弦と2弦はずっと同じフレットを押さえたまま、下のコードだけ変える。鳴り続ける音(ペダルトーン pedal tone)が、ブリットポップらしい広がりを作る。',
+    ev:[pC(0,'d','drone',4,{acc:1}),pC(4,'d','drone',2),pC(6,'u','drone',4),pC(10,'u','drone',2),pC(12,'d','drone',2,{acc:1}),pC(14,'u','drone',2)]},
+  eighth:{name:'8分ダウンの壁',type:'ストローク strumming',bars:1,
+    desc:'全部ダウン(振り下ろし)で8分音符をそろえる。音の壁で押し切る、サビ向けの弾き方。',
+    ev:[0,2,4,6,8,10,12,14].map(s=>pC(s,'d','full',2,{acc:s%4===0}))},
+  mellow_arp:{name:'メロウなアルペジオ・ループ',type:'アルペジオ arpeggio',bars:2,
+    desc:'7thコードの音を1つずつゆっくり鳴らして、2小節でひと回り。前の音を止めずに重ねていくのがコツ。',
+    ev:[pA(0,1,6,{acc:1}),pA(3,3,5),pA(6,4,6),pA(10,5,4),pA(12,4,6),pA(16,1,6,{acc:1}),pA(19,4,5),pA(22,3,4),pA(24,5,4),pA(26,4,4),pA(28,3,6)]},
+  mellow_dbl:{name:'2音ずつ鳴らすダブルストップ',type:'ダブルストップ double stop',bars:2,
+    desc:'高い2本の弦だけを一緒に鳴らす。半音下から滑り込む(スライド slide:TABの「/」)と、一気に色っぽくなる。',
+    ev:[pC(0,'d','top2',4,{sl:-1,acc:1}),pC(6,'d','top2',2),pC(10,'d','top2',6),pC(16,'d','top2',4,{sl:-1,acc:1}),pC(22,'d','top2',2),pC(24,'u','top2',2),pC(28,'d','top2',4)]},
+  mellow_hammer:{name:'ハンマリングで揺らすフレーズ',type:'単音フレーズ',bars:2,
+    desc:'押さえた音のすぐ上を別の指で叩いて鳴らす(ハンマリング hammer-on:TABの「h」)。コードの音(3度・5度・7度)の間を行き来するだけで、歌うようなフレーズになる。',
+    ev:[pN(0,'c3',3,{o:12,h:-2,acc:1}),pN(3,'c5',3,{o:12}),pN(6,'c7',4,{o:12}),pN(10,'c9',2,{o:12}),pN(12,'c7',4,{o:12}),pN(16,'c3',3,{o:12,h:-2,acc:1}),pN(19,'c5',5,{o:12}),pN(24,0,8,{o:12,h:-2})]},
+  jr_pm:{name:'8ビートの刻み',type:'カッティング',bars:1,
+    desc:'8分音符でブリッジミュート(PM)を刻んで、ところどころコードを鳴らしきる。90年代J-ROCKのAメロの定番。',
+    ev:[pC(0,'d','pw',2,{acc:1}),pM(2,'pw'),pM(4,'pw'),pM(6,'pw'),pC(8,'d','pw',2,{acc:1}),pM(10,'pw'),pM(12,'pw'),pC(14,'d','pw',2)]},
+  alt_oct:{name:'オクターブ奏法のリフ',type:'リフ riff',bars:1,
+    desc:'6弦と4弦で同じ音を1オクターブ離して鳴らす(オクターブ奏法)。間の5弦は指で触れて音を消しておく。平成の邦ロックでおなじみの鋭い音。',
+    ev:[0,0,3,5,7,5,3,0].map((n,i)=>pC(i*2,'d','oct',2,{n,acc:i%4===0}))},
+  nu_chug:{name:'シンコペーションの刻み',type:'カッティング',bars:1,
+    desc:'キックと同じタイミングで、低い2音を「ザクッ」と刻む。拍の裏に食い込む(シンコペーション syncopation)のが、ヒップホップゆずりのノリ。',
+    ev:[pC(0,'d','low',2,{acc:1}),pM(3,'low'),pM(4,'low'),pC(6,'d','low',2,{acc:1}),pM(8,'low'),pM(9,'low'),pM(11,'low'),pC(12,'d','low',1,{acc:1}),pX(13,'u','low'),pC(14,'d','low',2)]},
+  mix_cut:{name:'ミクスチャーのカッティング',type:'カッティング',bars:1,
+    desc:'高い弦だけで、ファンクっぽく細かく刻む。ラップの後ろで鳴ってる「チャカチャカ」の正体。',
+    ev:[pC(0,'d','top',1,{acc:1}),pX(1,'u','top'),pX(2,'d','top'),pC(3,'u','top',1),pX(4,'d','top'),pX(5,'u','top'),pC(6,'d','top',1,{acc:1}),pX(7,'u','top'),pX(8,'d','top'),pC(9,'u','top',1),pX(10,'d','top'),pC(11,'u','top',1),pX(12,'d','top'),pX(13,'u','top'),pC(14,'d','top',2,{acc:1})]},
+  folk_bass:{name:'ベース+ストローク',type:'ストローク strumming',bars:1,
+    desc:'拍の頭は低い弦を1本だけ(ベース音)、あとは高い弦をかき鳴らす。「ボン・チャカ・ボン・チャカ」で、ギター1本でもリズムが立つ。',
+    ev:[pA(0,0,4,{acc:1}),pC(4,'d','top',2),pC(6,'u','top',2),pA(8,1,4,{acc:1}),pC(12,'d','top',2),pC(14,'u','top',2)]},
+  folk_3f:{name:'スリーフィンガー',type:'アルペジオ arpeggio',bars:1,
+    desc:'親指で低い弦を交互に、人さし指と中指で高い弦を弾く(スリーフィンガー three-finger picking)。ギター1本でベースと伴奏を同時に鳴らせる。',
+    ev:[pA(0,0,4,{acc:1}),pA(2,4,2),pA(4,2,4),pA(6,5,2),pA(8,1,4,{acc:1}),pA(10,4,2),pA(12,2,4),pA(14,3,2)]}
+};
 const SUBS={
   pops:[
     {id:'kayou',name:'昭和歌謡',era:'70-80年代',pat:'kayou',bpm:118,tone:'clean',style:'triad',rec:['harmonic','minor','yonanuki'],presets:{harmonic:[['歌謡の哀愁 i–iv–V–i',[0,3,4,0]],['i–♭VI–V–i',[0,5,4,0]]]},desc:'ストリングス(弦楽器)が鳴る、哀愁たっぷりの歌謡曲。マイナーキーなのに戻りのコードだけ明るい(ハーモニックマイナー)ドラマチックな響きが多い。',point:'哀愁の決め手はV(明るい戻りのコード)。その上で光る「半音上がる音」を狙うと一気に歌謡っぽくなる。'},
@@ -611,16 +723,21 @@ const SUBS={
     {id:'hard',name:'ハードロック',era:'70年代',pat:'rock',bpm:112,tone:'dist',style:'power',rec:['minpenta','mixolydian','minor'],desc:'歪んだギターの重いリフ(くり返しのフレーズ)が主役。ギターソロも見せ場。',point:'マイナーペンタだけでリフもソロも作れる。'},
     {id:'grunge',name:'グランジ',era:'90年代',pat:'rock',bpm:100,tone:'fuzz',style:'power',rec:['minor','minpenta','phrygian'],desc:'荒くて暗い90年代のロック。静かなAメロからサビで一気に爆発する作りが多い。',point:'うまく弾くより、荒っぽさと強弱の差。'},
     {id:'guitarrock',trim:0.65,name:'邦ギターロック',era:'2000年代',pat:'anison',bpm:160,tone:'crunch',style:'triad',rec:['major','minor'],desc:'日本のバンドに多い、ギターのコードストロークを中心にした疾走感のあるロック。',point:'8分の刻みとアクセントで、サビを前に押し出す。'},
-    {id:'dancerock',trim:0.8,name:'4つ打ち邦ロック',era:'2010年代',pat:'edm',bpm:150,tone:'crunch',style:'triad',rec:['minor','major'],desc:'ダンスミュージックの4つ打ち(毎拍キック)を取り入れた邦ロック。フェスで手拍子しやすいノリ。',point:'ギターは裏拍で短く切ると、4つ打ちとよく噛み合う。'}
+    {id:'dancerock',trim:0.8,name:'4つ打ち邦ロック',era:'2010年代',pat:'edm',bpm:150,tone:'crunch',style:'triad',rec:['minor','major'],desc:'ダンスミュージックの4つ打ち(毎拍キック)を取り入れた邦ロック。フェスで手拍子しやすいノリ。',point:'ギターは裏拍で短く切ると、4つ打ちとよく噛み合う。'},
+    {id:'jrock90',name:'90年代J-ROCK',era:'90年代',pat:'jrock',bpm:140,tone:'dist',style:'triad',rec:['major','mixolydian','minor'],presets:{major:[['王道進行 IV–V–iii–vi',[3,4,2,5]],['I–V–vi–IV',[0,4,5,3]]],mixolydian:[['I–♭VII–IV–I',[0,6,3,0]]]},phrases:[PH.jr_pm,PH.bz_riff,PH.eighth],desc:'ミリオンヒットを連発した90年代の日本のロック。歪んだギターのリフと、歌謡曲ゆずりの覚えやすいメロディを合わせたのが特徴。',point:'リフはマイナーペンタ、サビはコードの音。この2つを使い分けると一気に90年代っぽくなる。'},
+    {id:'heiseialt',name:'平成オルタナ',era:'90年代後半-2000年代',pat:'alt',bpm:152,tone:'fuzz',style:'triad',rec:['minor','phrygian','dorian'],presets:{minor:[['i–♭VII–♭VI–♭VII',[0,6,5,6]],['i–iv–♭VII–i',[0,3,6,0]]]},phrases:[PH.alt_oct,PH.tk_kime,PH.eighth],desc:'ざらついた荒い音と、切れ味の鋭いギターで突っ走る平成の日本のオルタナティブロック。オクターブ奏法と、急に止まる「キメ」が目印。',point:'きれいに弾くより、鋭く短く。休む場所でキレを出す。'},
+    {id:'ukrock',name:'UKロック/ブリットポップ',era:'90年代',pat:'brit',bpm:92,tone:'crunch',rev:0.24,style:'triad',rec:['major','mixolydian','minor'],presets:{major:[['I–V–vi–IV',[0,4,5,3]],['I–V–vi–III–IV–V',[0,4,5,SP3,3,4]]]},phrases:[PH.strum,PH.drone,PH.eighth],desc:'イギリスの90年代ロック。厚いストロークに、みんなで歌えるメロディ。アコギとエレキを重ねて音の壁を作る。',point:'ストロークは止めずに腕を振り続けるのがコツ。弾かない拍も空振りする。'}
   ],
   metal:[
     {id:'thrash',name:'スラッシュメタル',era:'80年代',pat:'punk',bpm:200,tone:'dist',style:'power',rec:['minor','phrygian'],desc:'とにかく速くて攻撃的。パンクのスピードとメタルの重さを合わせた。',point:'低い弦の刻みを止めずに続けるのが一番大事。'},
     {id:'melospeed',name:'メロスピ',era:'90年代',pat:'anison',bpm:190,tone:'dist',style:'triad',rec:['harmonic','minor'],presets:{harmonic:[['クサメロ i–♭VI–V–i',[0,5,4,0]],['i–iv–V–i',[0,3,4,0]]]},desc:'メロディックスピードメタル。速いのにメロディが泣ける。日本でも特に人気が高い。',point:'ハーモニックマイナーの「半音で上がる音」が泣きの決め手。'},
     {id:'doom',name:'ドゥームメタル',era:'70年代〜',pat:'metal',bpm:66,tone:'fuzz',style:'power',rec:['phrygian','minor'],desc:'遅くて重くて暗い。1音1音を引きずるように鳴らす。',point:'速さはいらない。伸ばす音の重さで勝負。'},
     {id:'metalcore',name:'メタルコア',era:'2000年代〜',pat:'breakdown',bpm:140,tone:'dist',style:'power',rec:['minor','phrygian'],desc:'メタルとハードコアの合体。テンポを半分に落とす「ブレイクダウン」で一番盛り上がる。',point:'キックに合わせて低い音を「ズン、ズズン」と刻む。'},
-    {id:'djent',name:'ジェント',era:'2010年代',pat:'breakdown',bpm:120,tone:'dist',style:'power',rec:['phrygian','minor'],desc:'すごく低くチューニングしたギターで、変拍子のような複雑な刻みを繰り返す。',point:'拍子を7/8にすると、ジェントらしいズレが出る。'}
+    {id:'djent',name:'ジェント',era:'2010年代',pat:'breakdown',bpm:120,tone:'dist',style:'power',rec:['phrygian','minor'],desc:'すごく低くチューニングしたギターで、変拍子のような複雑な刻みを繰り返す。',point:'拍子を7/8にすると、ジェントらしいズレが出る。'},
+    {id:'numetal',name:'ニューメタル/ミクスチャー',era:'90年代後半-2000年代',pat:'numetal',bpm:100,tone:'dist',style:'triad',rec:['minor','phrygian','harmonic'],presets:{minor:[['i–♭VI–♭VII–i',[0,5,6,0]],['i–iv–i–♭VI',[0,3,0,5]]],phrygian:[['i–♭II–i',[0,1,0,0]]]},phrases:[PH.nu_chug,PH.mix_cut],desc:'メタルの重さにヒップホップのノリを混ぜたロック。ラップと叫びが入り混じる。日本ではミクスチャーロックとして大人気になった。',point:'刻みはドラムのキックと同じタイミングで。すき間(休符)がノリを作る。'}
   ],
   hiphop:[
+    {id:'mellowgtr',name:'ビート+ギター(メロウ)',era:'2010年代〜',pat:'mellow',bpm:84,tone:'clean',rev:0.28,style:'seventh',swing16:0.6,trim:1.15,rec:['minor','dorian','major'],presets:{minor:[['メロウ定番 iv7–♭VII7–♭IIImaj7–♭VImaj7',[3,6,2,5]],['i7–iv7',[0,3]]],dorian:[['i7–IV7',[0,3]]],major:[['IVmaj7–iii7–ii7–Imaj7',[3,2,1,0]]]},phrases:[PH.mellow_arp,PH.mellow_dbl,PH.mellow_hammer],desc:'ドラムとベースだけのビートに、ギターのループ(くり返すフレーズ)を乗せるスタイル。日本語ラップのメロウな曲によく使われる。',point:'ギターは歌やラップのすき間を埋める役。同じフレーズを何回もくり返すのが正解。'},
     {id:'boombap',name:'ブーンバップ',era:'90年代',pat:'hiphop',bpm:90,rec:['minor','dorian'],desc:'太いキック(ブーン)とスネア(バップ)が主役の90年代のヒップホップ。',point:'少し跳ねたリズムに乗って、弾きすぎない。'},
     {id:'trap',name:'トラップ',era:'2010年代〜',pat:'trap',bpm:140,tone:'lofi',swing16:0,rec:['minor','harmonic','phrygian'],desc:'細かく連打するハイハットと、長く伸びる低音(808ベース)が特徴。スネアは3拍目だけ(ハーフタイム)。',point:'暗めのスケールで、音数を極端に減らすとトラップっぽい。'},
     {id:'lofihh',name:'ローファイ・ヒップホップ',era:'2010年代〜',pat:'hiphop',bpm:75,tone:'lofi',rev:0.25,swing16:0.62,rec:['dorian','major','minor'],desc:'わざと音をこもらせた、勉強や作業のBGMで人気のゆるいビート。',point:'7thコードを1音ずつ、ゆっくり。'},
@@ -670,6 +787,16 @@ const SUBS={
     {id:'bossa60',name:'ボサノバ',era:'60年代',pat:'bossa',bpm:126,desc:'ささやくような歌と、ナイロン弦のギター。',point:'親指のベースと和音を分けて考える。'},
     {id:'samba',name:'サンバ',era:'—',pat:'bossa',bpm:180,desc:'ボサノバの元になった、速くてにぎやかなブラジルのリズム。',point:'速い2拍子のノリ。'}
   ],
+  folk:[
+    {id:'jfolk70',name:'70年代フォーク',era:'70年代',pat:'folk',bpm:96,rec:['major','minor','yonanuki'],presets:{major:[['I–vi–IV–V',[0,5,3,4]],['I–iii–IV–V',[0,2,3,4]]]},phrases:[PH.folk_bass,PH.strum],desc:'アコースティックギター1本で、自分の言葉を歌う。日本では70年代に大ブームになった。',point:'ベース音とストロークを分けるだけで、ひとりでもバンドっぽく聞こえる。'},
+    {id:'threefinger',name:'スリーフィンガー',era:'60-70年代',pat:'folkfinger',bpm:88,rec:['major','minor'],presets:{major:[['I–V–vi–iii–IV–I–IV–V',[0,4,5,2,3,0,3,4]]]},phrases:[PH.folk_3f],desc:'指で弦を1本ずつ弾く、やさしいアルペジオの伴奏。',point:'親指は「ボン・ボン」と一定に。慣れるまではゆっくりで大丈夫。'},
+    {id:'neofolk',name:'令和の弾き語り',era:'2000年代〜',pat:'folk',bpm:104,style:'add9',rec:['major','minor'],presets:{major:[['4156進行 IV–I–V–vi',[3,0,4,5]],['I–V–vi–IV',[0,4,5,3]]]},phrases:[PH.strum,PH.folk_bass],desc:'SNSや路上ライブから広がった今の弾き語り。add9などのきれいな響きのコードがよく使われる。',point:'add9の「浮いた音」を鳴らしっぱなしにすると、今っぽい透明感が出る。'}
+  ],
+  artist:[
+    {id:'bz',name:'ギターヒーロー系ハードロック',era:'参考:B\'z',ref:'B\'z',pat:'jrock',bpm:136,tone:'dist',style:'triad',rec:['mixolydian','minor','major'],presets:{mixolydian:[['I–♭VII–IV–I',[0,6,3,0]],['I–IV–♭VII–IV',[0,3,6,3]]],minor:[['疾走 i–♭VI–♭VII–i',[0,5,6,0]]],major:[['I–V–vi–IV',[0,4,5,3]]]},phrases:[PH.bz_riff,PH.bz_chug,PH.bz_bend],desc:'歪んだギターのリフ、ザクザクの刻み、泣きのチョーキング。ギターが歌と同じくらい主役になる、90年代から続く日本のハードロック。',point:'リフとソロはマイナーペンタ。明るいコードの上で暗めの音を弾くぶつかりが、ハードロックの味。'},
+    {id:'tk',name:'ハイトーン轟音オルタナ',era:'参考:凛として時雨',ref:'凛として時雨',pat:'alt',bpm:172,tone:'fuzz',style:'add9',rec:['minor','melodic','phrygian'],presets:{minor:[['i–♭VI–♭VII–iv',[0,5,6,3]],['iv–v–♭VI–♭VII',[3,4,5,6]]]},phrases:[PH.tk_tap,PH.tk_cut,PH.tk_kime],desc:'速いテンポ、轟音、きらきらした高音、急に止まるキメ。静かと爆発を行き来する、張りつめた空気のスタイル。',point:'拍子を7/8などに変えると、つんのめるような緊張感が出る。'},
+    {id:'oasis',name:'ブリットポップの壁ストローク',era:'参考:Oasis',ref:'Oasis',pat:'brit',bpm:86,tone:'crunch',rev:0.26,style:'triad',rec:['major','mixolydian','minor'],presets:{major:[['I–V–vi–III–IV–V',[0,4,5,SP3,3,4]],['I–V–vi–IV',[0,4,5,3]]],mixolydian:[['I–♭VII–IV–I',[0,6,3,0]]]},phrases:[PH.strum,PH.drone,PH.eighth],desc:'厚いストロークの壁と、肩を組んで歌えるメロディ。高い弦を鳴らしっぱなしにしてコードを変えるのが特徴。',point:'うまさより、止まらずにかき鳴らし続けること。'}
+  ],
   country:[
     {id:'classiccountry',name:'クラシック・カントリー',era:'50-60年代',pat:'country',bpm:112,desc:'「ブン・チャッ」の素朴なカントリー。',point:'ベース音と和音を交互に。'},
     {id:'bluegrass',name:'ブルーグラス',era:'40年代〜',pat:'country',bpm:160,tone:'nylon',desc:'アコースティック楽器だけで速く弾く、アメリカの伝統音楽。',point:'速いテンポで、明るく正確に。'}
@@ -684,7 +811,7 @@ const LVDESC={1:'全部見せる:コードの音+スケールの音+音名',2:'�
 const MAXC=16;
 
 const S={genre:'pops',sub:null,key:0,mood:'major',prog:0,bpm:100,bars:2,level:1,playing:false,idx:0,peek:false,
-  stats:{g:0,o:0,x:0},custom:[0,4,5,3],lens:[null,null,null,null],meter:'4/4',meters:[null,null,null,null],mute:{drums:false,bass:false,gtr:false}};
+  phr:0,pick:'genre',stats:{g:0,o:0,x:0},custom:[0,4,5,3],lens:[null,null,null,null],meter:'4/4',meters:[null,null,null,null],mute:{drums:false,bass:false,gtr:false}};
 const $=id=>document.getElementById(id);
 function curSub(){return S.sub?(SUBS[S.genre]||[]).find(x=>x.id===S.sub):null;}
 function G(){const b=GENRES[S.genre],x=curSub();if(!x)return b;
@@ -759,10 +886,11 @@ function voicing(ch){const base=40+((ch.root-4+12)%12);return VOICE[ch.q].map(x=
 
 /* ================= 画面 ================= */
 function buildGenres(){
-  $('genres').innerHTML=Object.entries(GENRES).map(([k,g])=>`<button class="gb" data-g="${k}">${g.name}<small>${g.en}</small></button>`).join('');
+  $('genres').innerHTML=Object.entries(GENRES).filter(([k,g])=>!g.hidden).map(([k,g])=>`<button class="gb" data-g="${k}">${g.name}<small>${g.en}</small></button>`).join('');
   $('genres').querySelectorAll('.gb').forEach(b=>b.addEventListener('click',()=>setGenre(b.dataset.g)));
 }
 function renderSubs(){
+  if(GENRES[S.genre].hidden){$('subs').innerHTML='';return;}
   const list=SUBS[S.genre]||[];
   $('subs').innerHTML=list.length?`<div class="ttl" style="margin:10px 0 6px"><span>年代・スタイル <span class="en">sub-genre / era</span></span></div><div class="subgrid"><button class="sb ${S.sub?'':'on'}" data-s="">標準<small>まとめ</small></button>${list.map(x=>`<button class="sb ${S.sub===x.id?'on':''}" data-s="${x.id}">${x.name}<small>${x.era||''}</small></button>`).join('')}</div>`:'';
   $('subs').querySelectorAll('.sb').forEach(b=>b.addEventListener('click',()=>setGenre(S.genre,b.dataset.s||null)));
@@ -802,6 +930,13 @@ function buildFretboard(){
     if(f===12)m.innerHTML='<i></i><i></i>';
     fb.appendChild(m);
   }
+}
+function renderPick(){
+  const art=!!GENRES[S.genre].hidden;
+  $('pickmode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',(b.dataset.m==='artist')===art));
+  $('genrepick').hidden=art;$('artistpick').hidden=!art;
+  $('artists').innerHTML=SUBS.artist.map(x=>`<button class="sb ${S.genre==='artist'&&S.sub===x.id?'on':''}" data-a="${x.id}">${x.name}<small>${x.era}</small></button>`).join('');
+  $('artists').querySelectorAll('.sb').forEach(b=>b.addEventListener('click',()=>setGenre('artist',b.dataset.a)));
 }
 function renderGenreButtons(){document.querySelectorAll('.gb').forEach(b=>b.classList.toggle('on',b.dataset.g===S.genre));}
 function renderTracks(){document.querySelectorAll('.trk').forEach(b=>b.classList.toggle('off',S.mute[b.dataset.t]));}
@@ -852,7 +987,7 @@ function switchTab(t){
   $('start').hidden=true;window.scrollTo(0,0);
 }
 function randomize(){
-  const gs=Object.keys(GENRES),g=gs[Math.floor(Math.random()*gs.length)];
+  const gs=Object.keys(GENRES).filter(k=>!GENRES[k].hidden),g=gs[Math.floor(Math.random()*gs.length)];
   const sl=SUBS[g]||[];setGenre(g,sl.length&&Math.random()<0.75?sl[Math.floor(Math.random()*sl.length)].id:null);
   const ms=GENRES[g].moods,pick=Math.random()<0.6?ms.slice(0,3):ms;
   const m=pick[Math.floor(Math.random()*pick.length)];
@@ -908,17 +1043,17 @@ function renderStats(){
   $('stats').textContent=t?`このレベルで弾いた音:◎ ${g} / ○ ${o} / △ ${x}(◎の割合 ${Math.round(g/t*100)}%)`:'';
 }
 function refresh(){
-  renderSummary();renderSubs();
+  renderSummary();renderSubs();renderPick();
   renderGenreButtons();renderTracks();renderLevel();renderBuilder();renderTasks();renderKeyFinder();
   if(!S.custom.length)return;
   if(S.idx>=S.custom.length)S.idx=0;
-  renderChips();renderBoard();renderWhy();renderStats();
+  renderChips();renderBoard();renderWhy();renderStats();renderPhrase();
 }
 function setGenre(k,sub=null){
   if(S.test)cancelTest();
   S.sub=sub;
   const was=S.playing;if(was)stop();
-  S.genre=k;const g=G();
+  S.genre=k;S.phr=0;const g=G();
   S.mood=g.moods[0];
   S.prog=0;S.idx=0;setCustom(presetsFor()[0][1]);
   S.bpm=g.bpm;$('bpm').value=g.bpm;$('bpmv').textContent=g.bpm;
@@ -1112,7 +1247,8 @@ const TONES={
   fuzz:{pre:9,k:140,hp:80,lp:3000,post:0.28},
   lofi:{pre:1,k:0,hp:160,lp:2400,post:1.1},
   jazz:{pre:1,k:0,hp:90,lp:2200,post:1.25},
-  nylon:{pre:1,k:0,hp:110,lp:2800,post:1.15}
+  nylon:{pre:1,k:0,hp:110,lp:2800,post:1.15},
+  acoustic:{pre:1,k:0,hp:85,lp:7200,post:1.05}
 };
 function makeChain(type,dests){
   const t=TONES[type],inp=ctx.createGain();inp.gain.value=t.pre;let node=inp;
@@ -1128,7 +1264,7 @@ function applyGenreAudio(){
   if(bkChain)bkChain.out.disconnect();if(leadChain)leadChain.out.disconnect();
   bkChain=makeChain(g.tone,[buses.gtr]);leadChain=makeChain(g.tone,[master,revSend]);
   revSend.gain.value=g.rev;lastStrum=null;
-  trim.gain.value=G().trim||({pops:1,metal:0.85,shoegaze:0.8,blues:0.7,hiphop:1.1,rock:0.55,punk:0.8,anison:0.8,funk:1.3,jazz:1.4,rnb:1.05,kayou:1,trap:1.05,dnb:1.05,breakdown:0.8,futurebass:0.95,reggae:1.5,bossa:1.4,country:1.5,edm:1.25})[patKey()]||1;
+  trim.gain.value=G().trim||({pops:1,metal:0.85,shoegaze:0.8,blues:0.7,hiphop:1.1,rock:0.55,punk:0.8,anison:0.8,funk:1.3,jazz:1.4,rnb:1.05,kayou:1,trap:1.05,dnb:1.05,breakdown:0.8,futurebass:0.95,reggae:1.5,bossa:1.4,country:1.5,edm:1.25,jrock:0.6,alt:0.6,brit:0.8,numetal:0.75,folk:1.35,folkfinger:1.35,mellow:1.15,artist:0.6})[patKey()]||1;
 }
 function env(g,t,peak,att,dec){g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(peak,0.0002),t+att);g.gain.exponentialRampToValueAtTime(0.0001,t+att+dec);}
 
@@ -1145,17 +1281,22 @@ function ksBuf(midi,mode){
 }
 function strum(t,midis,o={}){
   const {dir='d',vel=0.5,mode='ring',dur=null,spread=0.012,choke=true,tau=0.015,dest=null}=o;
+  if(quietGtr&&!o.phrase&&!dest)return;
   const v=ctx.createGain();v.gain.setValueAtTime(1,t);v.connect(dest||bkChain.inp);
   if(!dest){if(choke)chokeStrum(t,tau);lastStrum=v;}
   const order=dir==='u'?[...midis].reverse():midis;
   order.forEach((m,i)=>{
     const s=ctx.createBufferSource();s.buffer=ksBuf(m,mode);
     const g=ctx.createGain();g.gain.value=vel*(0.85+Math.random()*0.15)*(dir==='u'?0.8:1);
-    s.connect(g);g.connect(v);s.start(t+i*spread);s.stop(t+i*spread+2.7);
+    const st=t+i*spread;
+    if(o.from){s.playbackRate.setValueAtTime(Math.pow(2,o.from/12),st);s.playbackRate.setValueAtTime(Math.pow(2,o.from/12),st+(o.fhold||0.02));s.playbackRate.linearRampToValueAtTime(1,st+(o.fhold||0.02)+(o.ft||0.04));}
+    if(o.bend){const bt=st+(o.bt||0.1);s.playbackRate.setValueAtTime(1,bt);s.playbackRate.linearRampToValueAtTime(Math.pow(2,o.bend/12),bt+0.12);}
+    s.connect(g);g.connect(v);s.start(st);s.stop(st+2.7);
   });
   if(mode==='mute'){v.gain.setValueAtTime(1,t+0.07);v.gain.linearRampToValueAtTime(0,t+0.16);v._closed=true;}
   else if(dur){v.gain.setValueAtTime(1,t+dur);v.gain.linearRampToValueAtTime(0,t+dur+0.12);v._closed=true;}
 }
+let quietGtr=false;
 function chokeStrum(t,tau){
   const v=lastStrum;if(!v||v._closed)return;
   v.gain.setValueAtTime(1,t);v.gain.linearRampToValueAtTime(0,t+tau*3);v._closed=true;
@@ -1362,6 +1503,51 @@ const PAT={
     const r=40+((ch.root-4+12)%12);
     strum(t,[r,r+(i%4>=2?9:7)],{vel:0.55,spread:0.005,dur:sp*1.5});
   },
+  jrock(c){const {t,b,sp,vo,root,first,chStart}=c;
+    if([0,8,10].includes(b))kick(t,0.95);if(b===6)kick(t,0.5);if(b===4||b===12)snare(t,1);
+    if(b%2===0)hatC(t,b%4===0?0.75:0.45);if(first||chStart&&b===0)crash(t,0.6);
+    if(b%2===0)synthBass(t,root,sp*1.7,0.38,'metal');
+    const pw=vo.slice(0,3);
+    if(b===0||b===8||chStart)strum(t,vo.slice(0,4),{vel:0.55,spread:0.007});else if(b%2===0)strum(t,pw,{mode:'mute',vel:0.55,spread:0.004});
+  },
+  alt(c){const {t,b,sp,vo,root,chStart}=c;
+    if([0,6,8].includes(b))kick(t,0.95);if(b===11)kick(t,0.6);if(b===4||b===12)snare(t,1,1.1);
+    if(b%2===0)hatO(t,b%4===0?0.32:0.22);if(chStart)crash(t,0.65);
+    if(b%2===0)synthBass(t,root,sp*1.7,0.38,'metal');
+    if(b%2===0)strum(t,vo.slice(0,3),{vel:b%4===0?0.58:0.45,spread:0.005});
+  },
+  brit(c){const {t,b,sp,vo,root,first}=c;
+    if([0,7,8].includes(b))kick(t,b===7?0.6:0.9);if(b===4||b===12){snare(t,0.85);metallic(t,0.12,0.6,9000,6000);}
+    hatC(t,b%4===0?0.5:(b%2===0?0.32:0.18));if(first)crash(t,0.55);
+    if([0,6,8,14].includes(b))synthBass(t,root,sp*(b%8===0?3.5:1.8),0.38);
+    const d={0:'d',4:'d',6:'u',10:'u',12:'d',14:'u'}[b];if(d)strum(t,vo,{dir:d,vel:d==='d'?0.5:0.36});
+  },
+  numetal(c){const {t,b,sp,vo,root,chStart}=c;
+    const hits=[0,3,6,8,11,14];
+    if(hits.includes(b))kick(t,b===0?1:0.85);if(b===4||b===12)snare(t,1,1.1);
+    if(b%2===0)hatC(t,0.45);if(chStart)crash(t,0.6);
+    if(hits.includes(b))synthBass(t,root,sp*1.6,0.42,'metal');
+    if(hits.includes(b))strum(t,vo.slice(0,2),{mode:b===0||b===6?'ring':'mute',vel:0.6,spread:0.004,dur:sp*1.5});
+  },
+  folk(c){const {t,b,sp,vo,root}=c;
+    if(b===0||b===8)kick(t,0.4);if(b===4||b===12)snare(t,0.22,0.4);
+    hatC(t,b%2===0?0.2:0.11);
+    if(b===0||b===8)synthBass(t,root+(b===8?7:0),sp*3.5,0.32,'walk');
+    const d={0:'d',4:'d',6:'u',10:'u',12:'d',14:'u'}[b];if(d)strum(t,vo,{dir:d,vel:d==='d'?0.5:0.34,spread:0.014});
+  },
+  folkfinger(c){const {t,b,sp,vo,root}=c;
+    if(b===0)kick(t,0.3);if(b===4||b===12)snare(t,0.15,0.4);if(b%2===0)hatC(t,0.12);
+    if(b===0||b===8)synthBass(t,root+(b===8?7:0),sp*3.5,0.28,'walk');
+    if(b%2===0){const i=Math.min([0,4,2,5,1,4,2,3][b/2],vo.length-1);strum(t,[vo[i]],{vel:0.5,choke:false,dur:sp*3});}
+  },
+  mellow(c){const {t,b,sp,vo,root}=c;
+    if(b===0)kick(t,1);if(b===7)kick(t,0.5);if(b===10)kick(t,0.85);
+    if(b===4||b===12)snare(t,0.8,1.25);if(b===15)snare(t,0.12,0.4);
+    if(b%2===0)hatC(t,(b%4===0?0.5:0.34)*(0.85+Math.random()*0.15));if(b===14)hatO(t,0.18);
+    if(b===0||b===10)bass808(t,root,sp*(b===0?9:5.5),0.5);
+    if(b%2===0){const i=Math.min([1,3,4,5,4,3,2,3][b/2],vo.length-1);strum(t,[vo[i]],{vel:0.45,choke:false,dur:sp*3});}
+  },
+  artist(c){PAT.jrock(c);},
   hiphop(c){const {t,b,sp,vo,root,ch,chStart,per}=c;
     if(b===0)kick(t,1);if(b===7)kick(t,0.55);if(b===10)kick(t,0.9);
     if(b===4||b===12)snare(t,0.95,1.2);
@@ -1371,7 +1557,7 @@ const PAT={
     if(b%2===0){const i=Math.min([1,3,4,5,4,3,2,3][b/2],vo.length-1);strum(t,[vo[i]],{vel:0.5,choke:false,dur:sp*3});}
   }
 };
-const ODDMAP={kayou:'pops',trap:'hiphop',dnb:'hiphop',breakdown:'metal',futurebass:'hiphop',rock:'pops',punk:'metal',anison:'pops',funk:'pops',jazz:'blues',rnb:'hiphop',reggae:'pops',bossa:'hiphop',country:'pops',edm:'hiphop'};
+const ODDMAP={kayou:'pops',trap:'hiphop',dnb:'hiphop',breakdown:'metal',futurebass:'hiphop',rock:'pops',punk:'metal',anison:'pops',funk:'pops',jazz:'blues',rnb:'hiphop',reggae:'pops',bossa:'hiphop',country:'pops',edm:'hiphop',jrock:'pops',alt:'pops',brit:'pops',numetal:'metal',folk:'pops',folkfinger:'pops',mellow:'hiphop',artist:'pops'};
 function ODD(c){
   const {t,b,sp,vo,root,ch,chStart,per,first,M}=c,g=ODDMAP[patKey()]||patKey();
   if(M.kick.includes(b))kick(t,b===0?1:0.8);
@@ -1390,9 +1576,12 @@ function ODD(c){
 function scheduleStep(s,t0){
   const sp=60/S.bpm/4,{ci,inChord,per,first}=locate(s),m=meterOf(ci),M=METERS[m],b=inChord%M.steps,ch=chordAt(ci);
   const t=t0+swingDelay(b,m);
-  if(inChord===0)setTimeout(()=>{if(S.playing){S.idx=ci;renderChips();renderBoard();renderWhy();}},Math.max(0,(t-ctx.currentTime)*1000));
-  const c={t,b,sp,per,ch,vo:voicing(ch),root:36+ch.root,chStart:inChord===0,first,M};
-  if(m==='4/4')PAT[patKey()](c);else ODD(c);
+  if(inChord===0)setTimeout(()=>{if(S.playing){S.idx=ci;renderChips();renderBoard();renderWhy();renderPhrase();}},Math.max(0,(t-ctx.currentTime)*1000));
+  const c={t,b,sp,per,ch,vo:voicing(ch),root:36+ch.root,chStart:inChord===0,first,M,inChord};
+  const ph=m==='4/4'?curPhrase():null;
+  quietGtr=!!ph;
+  try{if(m==='4/4')PAT[patKey()](c);else ODD(c);}finally{quietGtr=false;}
+  if(ph)playPhrase(c,ph);
 }
 function scheduler(){
   while(nextTime<ctx.currentTime+0.12){scheduleStep(step,nextTime);nextTime+=60/S.bpm/4;step++;}
@@ -1409,7 +1598,108 @@ function stop(){
   $('play').textContent='▶ 伴奏';$('play').classList.remove('on');
 }
 
+/* ================= フレーズの再生とTAB譜 ================= */
+function curPhrase(){const L=G().phrases;return L&&L.length?L[S.phr%L.length]:null;}
+function tokN(n,ch){
+  if(typeof n==='number')return n;
+  const iv=k=>ch.pcs[k]!=null?(ch.pcs[k]-ch.root+12)%12:null;
+  if(n==='c3')return iv(1)!=null?iv(1):4;
+  if(n==='c5')return iv(2)!=null?iv(2):7;
+  if(n==='c7'){const v=iv(3);return v!=null&&v>=9?v:(iv(1)===3?10:11);}
+  if(n==='c9')return 14;
+  return 0;
+}
+// 指板のどこで弾くか(ルートが6弦にある形のまわりを優先)
+function posFor(m,f0){
+  let best=null,bs=1e9;
+  for(let s=5;s>=0;s--){const f=m-TUNING[s];if(f<0||f>FRETS)continue;
+    const sc=(f>=Math.max(0,f0-1)&&f<=f0+4)?0:10+Math.abs(f-f0);if(sc<bs){bs=sc;best={s,f};}}
+  return best;
+}
+function voPos(vo,i){const s=5-i,f=vo[i]-TUNING[s];return (s>=0&&f>=0&&f<=FRETS)?{s,f}:null;}
+const at=(m,p)=>p?{m,s:p.s,f:p.f}:{m,s:null,f:null};
+function evPos(e,ch,vo){
+  const f0=(ch.root-4+12)%12;
+  if(e.k==='n'){let m=vo[0]+tokN(e.n,ch)+(e.o||0);let p=posFor(m,f0);if(!p){m-=12;p=posFor(m,f0);}return [at(m,p)];}
+  if(e.k==='a'){
+    const i=Math.min(e.v,vo.length-1);let m=vo[i]+(e.o||0);
+    if(!e.o)return [at(m,voPos(vo,i)||posFor(m,f0))];
+    const vp=voPos(vo,i);if(vp&&vp.f+e.o<=FRETS)return [at(m,{s:vp.s,f:vp.f+e.o})];
+    let p=posFor(m,f0+e.o>FRETS-3?f0:f0+e.o);if(!p){m-=12;p=voPos(vo,i)||posFor(m,f0);}return [at(m,p)];
+  }
+  const set=e.set||'full',n=e.n||0;
+  if(set==='oct'){let b=vo[0]+n;if(b-40+2>FRETS)b-=12;return [at(b,{s:5,f:b-40}),at(b+12,{s:3,f:b+12-50})];}
+  if(set==='drone'){
+    const low=[0,1,2,3].filter(i=>i<vo.length).map(i=>at(vo[i],voPos(vo,i)||posFor(vo[i],f0)));
+    const f2=(S.key+7-11+24)%12,f1=(S.key-4+12)%12;
+    return [...low,at(59+f2,{s:1,f:f2}),at(64+f1,{s:0,f:f1})];
+  }
+  const all=vo.map((_,i)=>i);
+  const idx={full:all,top:all.slice(2),top2:all.slice(-2),pw:[0,1,2],low:[0,1]}[set]||all;
+  return idx.filter(i=>i<vo.length).map(i=>at(vo[i],voPos(vo,i)||posFor(vo[i],f0)));
+}
+function phraseIndex(ph){if(!ph._by){ph._by={};ph.ev.forEach(e=>{(ph._by[e.s]=ph._by[e.s]||[]).push(e);});}return ph._by;}
+function playPhrase(c,ph){
+  const L=16*ph.bars,pos=c.inChord%L,list=phraseIndex(ph)[pos];
+  if(!list)return;
+  list.forEach(e=>{
+    const ps=evPos(e,c.ch,c.vo),ms=ps.map(p=>p.m),vel=e.acc?0.62:0.48,dur=(e.d||1)*c.sp;
+    if(e.k==='n')strum(c.t,ms,{vel:vel+0.05,dur:dur*0.95,phrase:true,tau:0.01,from:e.h,fhold:0.05,ft:0.025,bend:e.b,bt:Math.min(dur*0.3,0.15)});
+    else if(e.k==='a')strum(c.t,ms,{vel:vel*0.95,dur:dur*1.1,phrase:true,choke:false});
+    else if(e.k==='c')strum(c.t,ms,{dir:e.dir||'d',vel:e.dir==='u'?vel*0.88:vel,dur:dur*0.92,spread:(e.set==='top2'||e.set==='oct'||e.set==='low')?0.004:0.009,phrase:true,from:e.sl,fhold:0.01,ft:0.07});
+    else if(e.k==='x')strum(c.t,ms,{dir:e.dir||'d',mode:'mute',vel:0.3,spread:0.004,phrase:true});
+    else if(e.k==='pm')strum(c.t,ms,{mode:'mute',vel:0.6,spread:0.004,phrase:true});
+    const ds=ps.filter(p=>p.s!=null),hold=Math.max(120,dur*800);
+    setTimeout(()=>{if(!S.playing)return;
+      ds.forEach(p=>{const cl=cells[p.s]&&cells[p.s][p.f];if(cl){cl.c.classList.add('phit');setTimeout(()=>cl.c.classList.remove('phit'),hold);}});
+      document.querySelectorAll('#phtab .now').forEach(x=>x.classList.remove('now'));
+      document.querySelectorAll('#phtab .k'+pos).forEach(x=>x.classList.add('now'));
+    },Math.max(0,(c.t-ctx.currentTime)*1000));
+  });
+}
+const SNAME=['1弦 e','2弦 B','3弦 G','4弦 D','5弦 A','6弦 E'];
+function phraseTabHTML(ph,ch){
+  const vo=voicing(ch),L=16*ph.bars;
+  const rows=[...Array(6)].map(()=>Array(L).fill('')),arr=Array(L).fill(''),pm=Array(L).fill('');
+  ph.ev.forEach(e=>{
+    evPos(e,ch,vo).forEach(p=>{if(p.s==null)return;
+      let t=e.k==='x'?'x':String(p.f);
+      if(e.k==='n'&&e.b)t+='b';if(e.k==='n'&&e.h)t='h'+t;if(e.sl)t='/'+t;
+      rows[p.s][e.s]=t;});
+    if(e.k==='c'||e.k==='x')arr[e.s]=e.dir==='u'?'↑':'↓';
+    if(e.k==='pm'){pm[e.s]='PM';arr[e.s]='↓';}
+  });
+  const hasPM=pm.some(x=>x);let h='';
+  for(let bar=0;bar<ph.bars;bar++){
+    const cols=[...Array(16)].map((_,j)=>bar*16+j),cell=(txt,j,cls='')=>`<div class="tc k${j} ${cls}">${txt}</div>`;
+    h+=`<div class="tabgrid">`;
+    h+=`<div class="tl">${ph.bars>1?(bar+1)+'小節':''}</div>`+cols.map((j,i)=>cell(i%4===0?(i/4+1):'·',j,'beat')).join('');
+    h+=`<div class="tl"></div>`+cols.map(j=>cell(arr[j],j,'arr')).join('');
+    for(let s=0;s<6;s++)h+=`<div class="tl">${SNAME[s]}</div>`+cols.map(j=>cell(rows[s][j],j,'str'+(rows[s][j]?' on':''))).join('');
+    if(hasPM)h+=`<div class="tl"></div>`+cols.map(j=>cell(pm[j],j,'pmr')).join('');
+    h+=`</div>`;
+  }
+  return h;
+}
+function renderPhrase(){
+  const ph=curPhrase(),box=$('phrasecard');
+  if(!ph){box.hidden=true;return;}
+  box.hidden=false;
+  const L=G().phrases.length,ch=chordAt(S.idx);
+  $('phname').innerHTML=`${ph.name}<small>${ph.type}・${S.phr%L+1}/${L}</small>`;
+  $('phdesc').textContent=ph.desc+(ph.bars>1?`(${ph.bars}小節でひと回り)`:'');
+  $('phtab').innerHTML=phraseTabHTML(ph,ch);
+  $('phodd').hidden=S.meter==='4/4'&&!S.meters.some(x=>x&&x!=='4/4');
+  $('phchord').textContent=`今のコード ${ch.name} の場合`;
+}
+$('phprev').addEventListener('click',()=>{const L=(G().phrases||[]).length;if(!L)return;S.phr=(S.phr+L-1)%L;renderPhrase();});
+$('phnext').addEventListener('click',()=>{const L=(G().phrases||[]).length;if(!L)return;S.phr=(S.phr+1)%L;renderPhrase();});
+
 /* ================= 操作 ================= */
+$('pickmode').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  if(b.dataset.m==='artist'){if(S.genre!=='artist')setGenre('artist',SUBS.artist[0].id);}
+  else if(GENRES[S.genre].hidden)setGenre('pops');
+}));
 $('play').addEventListener('click',()=>{
   if(S.test)return cancelTest();
   if(S.playing)return stop();
