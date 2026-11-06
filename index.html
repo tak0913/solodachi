@@ -270,7 +270,7 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
 </head>
 <body>
 <header class="top">
-  <div class="brand">Solodachi <span>v0.21</span></div>
+  <div class="brand">Solodachi <span>v0.22</span></div>
   <div class="nowc" id="nowchord"></div>
   <button class="play" id="play">▶ 伴奏</button>
 </header>
@@ -841,7 +841,32 @@ const PH={
     ev:[...Array(16)].map((_,i)=>i%8===0?pA(i,0,2,{acc:1}):pA(i,[3,4,5,4][i%4],1))},
   la_arp:{name:'きらめく9thのアルペジオ',type:'アルペジオ arpeggio',bars:2,
     desc:'add9の9度(浮いた音)を中心に、高い音を16分音符でゆらゆら回す。コーラス(音を少し揺らすエフェクター)をかけたような、耽美(たんび)できれいな響き。',
-    ev:[...Array(32)].map((_,i)=>pA(i,[3,5,4,5][i%4],2,{acc:i%8===0}))}
+    ev:[...Array(32)].map((_,i)=>pA(i,[3,5,4,5][i%4],2,{acc:i%8===0}))},
+  /* ---- v0.22:お気に入り曲リストから ---- */
+  jh_stab:{name:'ためて置くシェルコード',type:'カッティング',bars:1,
+    desc:'ルート・7th・3度の3音(シェルボイシング)を、拍の頭からわざと少し遅らせて短く置く。「ジャストより後ろ」に置くと、ラップがゆったり聞こえる。',
+    ev:[pC(0,'d','shell',3,{acc:1}),pC(5,'d','shell',2),pC(10,'d','shell',3,{acc:1}),pC(14,'u','shell',2)]},
+  jh_line:{name:'コードの音でしゃべるライン',type:'単音フレーズ',bars:2,
+    desc:'7th・9th(コードに重ねた高い音)をつないで、しゃべるようなリズムで弾く。ジャズっぽい「変わった響き」は、この上の方の音から来ている。',
+    ev:[pN(0,'c3',3,{o:12,acc:1}),pN(3,'c5',3,{o:12}),pN(6,'c7',2,{o:12}),pN(8,'c9',4,{o:12,acc:1}),pN(12,'c7',4,{o:12}),pN(16,'c9',2,{o:12,acc:1}),pN(18,'c7',2,{o:12}),pN(20,'c5',2,{o:12}),pN(22,'c3',4,{o:12,h:-2}),pN(26,0,6,{o:12})]},
+  dk_swell:{name:'暗く広がる伸ばし音',type:'アルペジオ arpeggio',bars:2,
+    desc:'高い音をほんの数個、長く鳴らして残響とディレイ(やまびこ)に溶かす。弾く量は最小限。空いたすき間が「夜の広さ」になる。',
+    ev:[pA(0,3,10,{acc:1}),pA(6,5,10),pA(16,4,10,{acc:1}),pA(24,2,8)]},
+  dk_pluck:{name:'高い2本をそっとはじく',type:'ダブルストップ double stop',bars:2,
+    desc:'高い2本だけを、指でそっとはじいて伸ばす。強く弾かない。808ベースとキックの「間」にだけ置く。',
+    ev:[pC(0,'d','top2',6,{acc:1}),pC(10,'d','top2',4),pC(16,'d','top2',8,{acc:1}),pC(27,'u','top2',4)]},
+  bw_cut:{name:'8ビートのソリッドカッティング',type:'カッティング',bars:1,
+    desc:'8分音符でコードを鳴らしながら、すき間に「チャッ」(x)を入れて16分の細かさを足す。弦を押さえる力をこまめにゆるめると、鋭くて硬い音になる。80年代のビートロックの基本。',
+    ev:[pC(0,'d','full',1,{acc:1}),pX(1,'u','full'),pC(2,'d','full',1),pX(3,'u','full'),pX(4,'d','full'),pC(5,'u','full',1),pC(6,'d','full',1,{acc:1}),pX(7,'u','full'),pC(8,'d','full',1,{acc:1}),pX(9,'u','full'),pC(10,'d','full',1),pC(11,'u','full',1),pX(12,'d','full'),pX(13,'u','full'),pC(14,'d','full',2,{acc:1})]},
+  bw_riff:{name:'オクターブを跳ねる単音リフ',type:'リフ riff',bars:1,
+    desc:'ルートと、その1オクターブ上を行き来しながら、下りてくる。音は少ないのに、跳ねる動きでノリが出る。歌の合間に入れる「合いの手」に。',
+    ev:[pN(0,0,2,{acc:1}),pN(2,12,1),pN(3,0,1),pN(4,10,2),pN(6,7,2),pN(8,0,2,{acc:1}),pN(10,12,1),pN(11,10,1),pN(12,7,2),pN(14,5,2)]},
+  cp_arp:{name:'ディレイで流れるアルペジオ',type:'アルペジオ arpeggio',bars:1,
+    desc:'高い音を8分音符で鳴らすだけ。あとはディレイ(やまびこ。音が少し遅れてくり返す)が間を埋めて、ピアノで弾いたような細かい流れになる。',
+    ev:[3,4,5,4,3,4,5,4].map((v,i)=>pA(i*2,v,3,{acc:i%4===0}))},
+  cp_piano:{name:'3・3・2で打つピアノ風コード',type:'カッティング',bars:1,
+    desc:'16分音符を「3つ・3つ・2つ」に分けた場所で、高い弦のコードを打つ。ピアノのリフでよく使うリズムを、ギターでやる。',
+    ev:[pC(0,'d','top',2,{acc:1}),pC(3,'d','top',2),pC(6,'d','top',2,{acc:1}),pC(8,'d','top',2,{acc:1}),pC(11,'d','top',2),pC(14,'d','top',2,{acc:1})]}
 
 };
 const SUBS={
@@ -884,6 +909,8 @@ const SUBS={
     {id:'ragegtr',name:'ビート+ギター(激しい)',era:'2020年代',pat:'hard',bpm:150,tone:'fuzz',style:'triad',swing16:0,trim:0.7,rec:['minor','phrygian','harmonic'],presets:{minor:[['ダーク i–♭VI',[0,5]],['i–♭VI–♭VII–♭VI',[0,5,6,5]]],phrygian:[['不穏 i–♭II',[0,1]]],harmonic:[['i–♭VI–V',[0,5,4,4]]]},phrases:[PH.hd_riff,PH.hd_stab,PH.hd_lead],desc:'トラップのビート(細かいハイハットと太い808ベース)に、思いきり歪ませたギターを乗せる。洋楽のレイジ(rage)系や、激しい日本語ラップの後ろで鳴っているような音。',point:'ギターは弾きすぎない。キックと808が鳴る場所に合わせて、少ない音で殴る。'},
     {id:'gfunk',name:'Gファンク',era:'90年代',pat:'hiphop',bpm:92,tone:'clean',rev:0.2,style:'seventh',swing16:0.58,rec:['minor','dorian','mixolydian'],presets:{minor:[['ループ i7–iv7',[0,3]],['i7–♭VII7',[0,6]]],dorian:[['i7–IV7',[0,3]]],mixolydian:[['I7–IV7',[0,3]]]},phrases:[PH.gf_lead,PH.funk_cut,PH.mellow_dbl],desc:'アメリカ西海岸(LA)の90年代ヒップホップ。70年代のファンクをゆったりさせて、高い「ピー」というシンセのリードと太いベースを乗せた。車で流すための音楽とも言われる。',point:'テンポはゆっくり、ノリは少し跳ねる。2つのコードを行き来するだけで十分。'},
     {id:'soulsample',name:'ソウルサンプリング',era:'2000年代',pat:'hiphop',bpm:88,tone:'lofi',rev:0.22,style:'seventh',swing16:0.56,rec:['major','minor','harmonic'],presets:{major:[['Imaj7–vi7–ii7–V7',[0,5,1,4]],['IVmaj7–iii7–vi7',[3,2,5,5]]],minor:[['i7–♭VImaj7',[0,5]]],harmonic:[['i–♭VII–♭VI–V',[0,6,5,4]]]},phrases:[PH.ss_chop,PH.ss_arp,PH.mellow_hammer],desc:'昔のソウルのレコードを切り取って(サンプリング sampling)ループさせ、その上でラップする2000年代のスタイル。早回しした歌声や、ストリングス(弦楽器)の切れ端がよく使われる。',point:'ギターで「レコードの切れ端」を作るつもりで。短く切って、同じ形をくり返す。'},
+    {id:'jazzrap',name:'ジャズ寄りのラップ',era:'2010年代〜',pat:'jazzhop',bpm:86,tone:'jazz',rev:0.24,style:'seventh',swing16:0.6,rec:['dorian','major','lydian','minor'],presets:{dorian:[['i7–IV7',[0,3]],['i7–ii7–i7–♭VIImaj7',[0,1,0,6]]],major:[['IVmaj7–iii7–ii7–Imaj7',[3,2,1,0]],['ii7–V7–Imaj7–vi7',[1,4,0,5]],['丸サ進行 IVmaj7–III7–vi7',[3,SP37,5,5]]],lydian:[['浮遊 Imaj7–II7',[0,1]]],minor:[['i7–♭VImaj7–iv7',[0,5,3,3]]]},phrases:[PH.jh_stab,PH.jh_line,PH.mellow_dbl],desc:'ジャズの楽器(ウッドベース・エレピ・サックス)や、7th・9thの重なった「変わった響き」のコードを使うヒップホップ。ドラムは少しもたつかせて、ゆったり後ろに乗る。',point:'コードの一番上の音(7thや9th)を目立たせると、一気にジャズっぽくなる。ルートは弾かなくていい。'},
+    {id:'darkrnb',name:'ダークなR&Bラップ',era:'2010年代〜',pat:'ovo',bpm:140,tone:'clean',rev:0.42,dly:0.28,style:'seventh',swing16:0,trim:1.05,rec:['minor','dorian','phrygian'],presets:{minor:[['夜 i7–♭VImaj7',[0,5]],['i7–iv7–♭VImaj7–v7',[0,3,5,4]]],dorian:[['i7–IV7',[0,3]]],phrygian:[['不穏 i7–♭IImaj7',[0,1]]]},phrases:[PH.dk_swell,PH.dk_pluck,PH.trap_bell],desc:'トラップの遅いノリ(スネアは3拍目だけ)に、こもった暗いシンセと、長く響く音を重ねる。歌とラップの中間みたいなメロディが乗る、広くて暗い夜っぽい音。',point:'弾く音は2つ3つで十分。残響とディレイに任せて、すき間を残す。'},
     {id:'boombap',name:'ブーンバップ',era:'90年代',pat:'hiphop',bpm:90,rec:['minor','dorian'],desc:'太いキック(ブーン)とスネア(バップ)が主役の90年代のヒップホップ。',point:'少し跳ねたリズムに乗って、弾きすぎない。'},
     {id:'trap',name:'トラップ',era:'2010年代〜',pat:'trap',bpm:140,tone:'lofi',swing16:0,rec:['minor','harmonic','phrygian'],desc:'細かく連打するハイハットと、長く伸びる低音(808ベース)が特徴。スネアは3拍目だけ(ハーフタイム)。',point:'暗めのスケールで、音数を極端に減らすとトラップっぽい。'},
     {id:'lofihh',name:'ローファイ・ヒップホップ',era:'2010年代〜',pat:'hiphop',bpm:75,tone:'lofi',rev:0.25,swing16:0.62,rec:['dorian','major','minor'],desc:'わざと音をこもらせた、勉強や作業のBGMで人気のゆるいビート。',point:'7thコードを1音ずつ、ゆっくり。'},
@@ -948,7 +975,9 @@ const SUBS={
     {id:'rhcp',name:'ファンクロックのカッティング',era:'参考:Red Hot Chili Peppers',ref:'Red Hot Chili Peppers',pat:'funk',bpm:96,tone:'crunch',style:'triad',rec:['dorian','mixolydian','minor'],presets:{dorian:[['i–IV',[0,3]]],mixolydian:[['I–♭VII–IV',[0,6,3]]],minor:[['i–♭VII–♭VI',[0,6,5]]]},phrases:[PH.funk_cut,PH.rh_dbl,PH.funk_single],desc:'ファンクのカッティングを、ロックの音量でやるスタイル。ベースとドラムと会話するような、すき間の多いギター。',point:'弾かない16分も手は振り続ける。音が出るのはほんの一部。'},
     {id:'bump',name:'物語系ギターロック',era:'参考:BUMP OF CHICKEN',ref:'BUMP OF CHICKEN',pat:'rock',bpm:150,tone:'crunch',rev:0.2,style:'add9',rec:['major','minor'],presets:{major:[['I–V–vi–IV',[0,4,5,3]],['IV–V–vi',[3,4,5,5]],['vi–IV–I–V',[5,3,0,4]]]},phrases:[PH.drone,PH.bp_arp,PH.eighth],desc:'まっすぐな8ビートに、高い弦を鳴らしっぱなしにしたコード。言葉を届けるために、ギターは前に出すぎず景色を描く。',point:'高い2本を同じ場所で押さえたままコードを変えると、きらきらした広がりが出る。'},
     {id:'glay',name:'疾走する王道J-ROCK',era:'参考:GLAY',ref:'GLAY',pat:'jrock',bpm:152,tone:'crunch',rev:0.18,style:'triad',rec:['major','minor'],presets:{major:[['王道進行 IV–V–iii–vi',[3,4,2,5]],['I–V–vi–IV',[0,4,5,3]],['IV–V–vi',[3,4,5,5]]],minor:[['疾走 ♭VI–♭VII–i',[5,6,0,0]]]},phrases:[PH.gl_arp,PH.jr_pm,PH.eighth],desc:'高い弦のアルペジオで始まって、8ビートで一気に駆け抜ける。2本のギターがアルペジオとコードを分担する、90年代J-ROCKの真ん中の音。',point:'Aメロは刻み(PM)で抑えて、サビで8分ダウンの壁。2本のギターの役割を分けるイメージで。'},
-    {id:'larc',name:'耽美できらめくロック',era:'参考:L\'Arc〜en〜Ciel',ref:'L\'Arc〜en〜Ciel',pat:'alt',bpm:138,tone:'crunch',rev:0.34,style:'add9',rec:['minor','lydian','melodic'],presets:{minor:[['i–♭VI–♭VII–i',[0,5,6,0]],['i–♭III–♭VII–♭VI',[0,2,6,5]]],lydian:[['浮遊 I–II',[0,1]]],melodic:[['i–IV',[0,3]]]},phrases:[PH.la_arp,PH.sg_arp,PH.eighth],desc:'揺れるようなきらきらしたギター、浮いた響きのコード、ドラマチックな展開。美しさと妖しさが同居する、90年代の日本のロック。',point:'9度(浮いた音)やリディアンの「#4」を混ぜると、一気に耽美な響きになる。'}
+    {id:'larc',name:'耽美できらめくロック',era:'参考:L\'Arc〜en〜Ciel',ref:'L\'Arc〜en〜Ciel',pat:'alt',bpm:138,tone:'crunch',rev:0.34,style:'add9',rec:['minor','lydian','melodic'],presets:{minor:[['i–♭VI–♭VII–i',[0,5,6,0]],['i–♭III–♭VII–♭VI',[0,2,6,5]]],lydian:[['浮遊 I–II',[0,1]]],melodic:[['i–IV',[0,3]]]},phrases:[PH.la_arp,PH.sg_arp,PH.eighth],desc:'揺れるようなきらきらしたギター、浮いた響きのコード、ドラマチックな展開。美しさと妖しさが同居する、90年代の日本のロック。',point:'9度(浮いた音)やリディアンの「#4」を混ぜると、一気に耽美な響きになる。'},
+    {id:'boowy',name:'8ビートのソリッドなビートロック',era:'参考:BOØWY',ref:'BOØWY',pat:'jrock',bpm:150,tone:'crunch',rev:0.16,dly:0.12,style:'triad',rec:['major','mixolydian','minor'],presets:{major:[['I–IV–V–IV',[0,3,4,3]],['I–V–vi–IV',[0,4,5,3]]],mixolydian:[['I–♭VII–IV–I',[0,6,3,0]]],minor:[['i–♭VII–♭VI–♭VII',[0,6,5,6]],['i–iv–♭VII–♭III',[0,3,6,2]]]},phrases:[PH.bw_cut,PH.bw_riff,PH.jr_pm],desc:'まっすぐな8ビートに、硬くて鋭いギターのカッティング。歪ませすぎず、音の切れ目でノリを出す。90年代J-ROCKの元になった、80年代の日本のビートロック。',point:'鳴らす音と「チャッ」(ミュート)の切り替えを速く。歪みを減らすほど、カッティングのキレがよく聞こえる。'},
+    {id:'coldplay',name:'ピアノ的アルペジオ+ディレイ',era:'参考:Coldplay',ref:'Coldplay',pat:'anthem',bpm:124,tone:'clean',rev:0.32,dly:0.38,style:'add9',rec:['major','lydian','minor'],presets:{major:[['IV–I–V–vi',[3,0,4,5]],['I–V–vi–IV',[0,4,5,3]],['vi–IV–I–V',[5,3,0,4]]],lydian:[['I–II',[0,1]]],minor:[['i–♭VI–♭III–♭VII',[0,5,2,6]]]},phrases:[PH.cp_arp,PH.cp_piano,PH.drone],desc:'ディレイ(やまびこ)をかけた高い音のアルペジオと、ピアノのように打つコード。4つ打ち寄りのドラムで、会場みんなで歌えるサビに持っていく。',point:'弾く音は少なめで、ディレイに間を埋めてもらう。テンポとディレイの間隔がそろうと、音が勝手に流れ出す。'}
   ],
   country:[
     {id:'classiccountry',name:'クラシック・カントリー',era:'50-60年代',pat:'country',bpm:112,desc:'「ブン・チャッ」の素朴なカントリー。',point:'ベース音と和音を交互に。'},
@@ -1370,7 +1399,7 @@ function tap(s,f,c){
 }
 
 /* ================= 音づくり ================= */
-let trim,ctx,master,backing,revSend,conv,noiseBuf,bkChain,leadChain,timer,nextTime,step,lastStrum=null;
+let trim,ctx,master,backing,revSend,conv,dlySend,dlyNode,noiseBuf,bkChain,leadChain,timer,nextTime,step,lastStrum=null;
 const buses={};
 const mtof=m=>440*Math.pow(2,(m-69)/12);
 // iPhoneでマナーモードでも鳴らす&アプリ版で音が止まるのを防ぐ
@@ -1397,6 +1426,10 @@ function initAudio(){
   revSend=ctx.createGain();revSend.connect(conv);conv.connect(backing);
   ['drums','bass','gtr'].forEach(k=>{const g=ctx.createGain();g.gain.value=S.mute[k]?0:1;g.connect(backing);buses[k]=g;});
   buses.drums.connect(revSend);buses.gtr.connect(revSend);
+  // v0.22:ギターだけにかかるディレイ(やまびこ)。付点8分(3/4拍)で、少しずつ小さく・こもりながらくり返す
+  dlySend=ctx.createGain();dlySend.gain.value=0;dlyNode=ctx.createDelay(2);
+  const dfb=ctx.createGain();dfb.gain.value=0.38;const dlp=ctx.createBiquadFilter();dlp.type='lowpass';dlp.frequency.value=2600;
+  buses.gtr.connect(dlySend);dlySend.connect(dlyNode);dlyNode.connect(dlp);dlp.connect(dfb);dfb.connect(dlyNode);dlp.connect(backing);
   noiseBuf=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);
   const nd=noiseBuf.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
   const b=ctx.createBufferSource();b.buffer=ctx.createBuffer(1,1,22050);b.connect(ctx.destination);b.start(0);
@@ -1431,9 +1464,10 @@ function applyGenreAudio(){
   if(!ctx)return;const g=G();
   if(bkChain)bkChain.out.disconnect();if(leadChain)leadChain.out.disconnect();
   bkChain=makeChain(g.tone,[buses.gtr]);leadChain=makeChain(g.tone,[master,revSend]);
-  revSend.gain.value=g.rev;lastStrum=null;
-  trim.gain.value=G().trim||({pops:1,metal:0.85,shoegaze:0.8,blues:0.7,hiphop:1.1,rock:0.55,punk:0.8,anison:0.8,funk:1.3,jazz:1.4,rnb:1.05,kayou:1,trap:1.05,dnb:1.05,breakdown:0.8,futurebass:0.95,reggae:1.5,bossa:1.4,country:1.5,edm:1.25,jrock:0.6,alt:0.6,brit:0.8,numetal:0.75,folk:1.35,folkfinger:1.35,mellow:1.15,hard:0.7,artist:0.6})[patKey()]||1;
+  revSend.gain.value=g.rev;lastStrum=null;setDelay();
+  trim.gain.value=G().trim||({pops:1,metal:0.85,shoegaze:0.8,blues:0.7,hiphop:1.1,rock:0.55,punk:0.8,anison:0.8,funk:1.3,jazz:1.4,rnb:1.05,kayou:1,trap:1.05,dnb:1.05,breakdown:0.8,futurebass:0.95,reggae:1.5,bossa:1.4,country:1.5,edm:1.25,jrock:0.6,alt:0.6,brit:0.8,numetal:0.75,folk:1.35,folkfinger:1.35,mellow:1.15,hard:0.7,jazzhop:1.3,ovo:1.05,anthem:1.0,artist:0.6})[patKey()]||1;
 }
+function setDelay(){if(!dlySend)return;dlySend.gain.value=G().dly||0;dlyNode.delayTime.value=Math.min(1.9,0.75*60/S.bpm);}
 function env(g,t,peak,att,dec){g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(peak,0.0002),t+att);g.gain.exponentialRampToValueAtTime(0.0001,t+att+dec);}
 
 /* --- ギター(弦をはじいた音を計算で作る) --- */
@@ -1722,6 +1756,28 @@ const PAT={
     if(b===0)bass808(t,root,sp*7,0.7);if(b===10)bass808(t,root,sp*5,0.6);
     if(b===0||b===10)strum(t,vo.slice(0,3),{vel:0.55,spread:0.005,dur:sp*(b===0?6:5)});
   },
+  jazzhop(c){const {t,b,sp,vo,root,ch,chStart,per}=c;
+    if(b===0)kick(t,0.85);if(b===6)kick(t,0.45);if(b===10)kick(t,0.75);
+    if(b===4||b===12)snare(t,0.75,0.9);if(b===7||b===15)snare(t,0.1,0.35);
+    if(b%2===0)ride(t,(b%4===0?0.32:0.22)*(0.85+Math.random()*0.15));if(b===4||b===12)hatC(t,0.22);
+    if(b%4===0){const iv=[0,(ch.pcs[1]-ch.root+12)%12,(ch.pcs[2]-ch.root+12)%12,ch.pcs[3]!=null?(ch.pcs[3]-ch.root+12)%12:7][b/4];synthBass(t,root+iv,sp*3.4,0.4,'walk');}
+    if(chStart)pad(t,ch.pcs,sp*per,0.035,'triangle',1800);
+    if(b===0||b===10){strum(t,vo.slice(1,5),{vel:0.38,spread:0.012,dur:sp*3});}
+  },
+  ovo(c){const {t,b,sp,vo,root,ch,chStart,per}=c;
+    if(b===0)kick(t,0.95);if(b===11)kick(t,0.6);if(b===8)snare(t,0.8,1.3);
+    if(b%4===0)hatC(t,0.28);if(b===14){hatC(t,0.16);hatC(t+sp/2,0.14);}
+    if(b===0)bass808(t,root,sp*10,0.6);if(b===11)bass808(t,root,sp*4.5,0.45);
+    if(chStart)pad(t,ch.pcs,sp*per,0.04,'triangle',800);
+    if(b===0||b===8){const i=Math.min([4,3][b/8],vo.length-1);strum(t,[vo[i]+12],{vel:0.32,choke:false,dur:sp*7});}
+  },
+  anthem(c){const {t,b,sp,vo,root,ch,chStart,per,first}=c;
+    if(b%4===0)kick(t,b===0?0.9:0.7);if(b===4||b===12)snare(t,0.75,1.1);
+    if(b%2===0)hatC(t,b%4===2?0.42:0.25);if(first)crash(t,0.5);
+    if(b%2===0)synthBass(t,root,sp*1.8,0.34);
+    if(chStart)pad(t,ch.pcs,sp*per,0.03,'sawtooth',2000);
+    if(b%2===0){const i=Math.min([3,4,5,4][(b/2)%4],vo.length-1);strum(t,[vo[i]+12],{vel:0.34,choke:false,dur:sp*2.5});}
+  },
   artist(c){PAT.jrock(c);},
   hiphop(c){const {t,b,sp,vo,root,ch,chStart,per}=c;
     if(b===0)kick(t,1);if(b===7)kick(t,0.55);if(b===10)kick(t,0.9);
@@ -1732,7 +1788,7 @@ const PAT={
     if(b%2===0){const i=Math.min([1,3,4,5,4,3,2,3][b/2],vo.length-1);strum(t,[vo[i]],{vel:0.5,choke:false,dur:sp*3});}
   }
 };
-const ODDMAP={kayou:'pops',trap:'hiphop',dnb:'hiphop',breakdown:'metal',futurebass:'hiphop',rock:'pops',punk:'metal',anison:'pops',funk:'pops',jazz:'blues',rnb:'hiphop',reggae:'pops',bossa:'hiphop',country:'pops',edm:'hiphop',jrock:'pops',alt:'pops',brit:'pops',numetal:'metal',folk:'pops',folkfinger:'pops',mellow:'hiphop',hard:'hiphop',artist:'pops'};
+const ODDMAP={kayou:'pops',trap:'hiphop',dnb:'hiphop',breakdown:'metal',futurebass:'hiphop',rock:'pops',punk:'metal',anison:'pops',funk:'pops',jazz:'blues',rnb:'hiphop',reggae:'pops',bossa:'hiphop',country:'pops',edm:'hiphop',jrock:'pops',alt:'pops',brit:'pops',numetal:'metal',folk:'pops',folkfinger:'pops',mellow:'hiphop',hard:'hiphop',jazzhop:'hiphop',ovo:'hiphop',anthem:'pops',artist:'pops'};
 function ODD(c){
   const {t,b,sp,vo,root,ch,chStart,per,first,M}=c,g=ODDMAP[patKey()]||patKey();
   if(M.kick.includes(b))kick(t,b===0?1:0.8);
@@ -1751,6 +1807,7 @@ function ODD(c){
 function scheduleStep(s,t0){
   const sp=60/S.bpm/4,{ci,inChord,per,first}=locate(s),m=meterOf(ci),M=METERS[m],b=inChord%M.steps,ch=chordAt(ci);
   const t=t0+swingDelay(b,m);
+  if(inChord===0&&dlySend&&dlySend.gain.value>0){const dt=Math.min(1.9,0.75*60/S.bpm);if(Math.abs(dlyNode.delayTime.value-dt)>0.001)dlyNode.delayTime.setTargetAtTime(dt,ctx.currentTime,0.05);}
   if(inChord===0)setTimeout(()=>{if(S.playing){S.idx=ci;renderChips();renderBoard();renderWhy();renderPhrase();}},Math.max(0,(t-ctx.currentTime)*1000));
   const c={t,b,sp,per,ch,vo:voicing(ch),root:36+ch.root,chStart:inChord===0,first,M,inChord};
   const ph=m==='4/4'?curPhrase():null;
@@ -1790,7 +1847,7 @@ function tokN(n,ch,raw){
   if(n==='c3')return iv(1)!=null?iv(1):4;
   if(n==='c5')return iv(2)!=null?iv(2):7;
   if(n==='c7'){const v=iv(3);return v!=null&&v>=9?v:(iv(1)===3?10:11);}
-  if(n==='c9')return 14;
+  if(n==='c9')return raw?14:fitN(14,ch); // v0.22:9度がキーの外になるコード(iiiなど)では半音寄せる
   return 0;
 }
 // 指板のどこで弾くか(ルートが6弦にある形のまわりを優先)
