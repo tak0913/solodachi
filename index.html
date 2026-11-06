@@ -270,7 +270,7 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
 </head>
 <body>
 <header class="top">
-  <div class="brand">Solodachi <span>v0.18</span></div>
+  <div class="brand">Solodachi <span>v0.19</span></div>
   <div class="nowc" id="nowchord"></div>
   <button class="play" id="play">▶ 伴奏</button>
 </header>
@@ -701,7 +701,125 @@ const PH={
     ev:[pA(0,0,4,{acc:1}),pC(4,'d','top',2),pC(6,'u','top',2),pA(8,1,4,{acc:1}),pC(12,'d','top',2),pC(14,'u','top',2)]},
   folk_3f:{name:'スリーフィンガー',type:'アルペジオ arpeggio',bars:1,
     desc:'親指で低い弦を交互に、人さし指と中指で高い弦を弾く(スリーフィンガー three-finger picking)。ギター1本でベースと伴奏を同時に鳴らせる。',
-    ev:[pA(0,0,4,{acc:1}),pA(2,4,2),pA(4,2,4),pA(6,5,2),pA(8,1,4,{acc:1}),pA(10,4,2),pA(12,2,4),pA(14,3,2)]}
+    ev:[pA(0,0,4,{acc:1}),pA(2,4,2),pA(4,2,4),pA(6,5,2),pA(8,1,4,{acc:1}),pA(10,4,2),pA(12,2,4),pA(14,3,2)]},
+  /* ---- v0.19:昔からあるジャンル用 ---- */
+  pop_arp:{name:'8分のアルペジオ',type:'アルペジオ arpeggio',bars:1,
+    desc:'コードを押さえたまま、低い弦から1本ずつ順番に鳴らして戻ってくる。歌の後ろでいちばんよく使われる、やさしい伴奏。',
+    ev:[0,1,2,3,4,3,2,1].map((v,i)=>pA(i*2,v,3,{acc:i===0}))},
+  rock_pw:{name:'8分のパワーコード',type:'カッティング',bars:1,
+    desc:'パワーコード(ルートと5度の2〜3音)を8分音符で全部ダウン。1拍目と、ちょっとずらした4つ目の音を強くするとロックのノリになる。',
+    ev:[0,2,4,6,8,10,12,14].map(s=>pC(s,'d','pw',2,{acc:s===0||s===6||s===12}))},
+  boogie:{name:'ブギーの刻み',type:'リフ riff',bars:1,
+    desc:'ルートを押さえたまま、隣の弦を「5度→6度→5度→6度」と指1本で行き来する。ロックンロールとブルースの心臓みたいな刻み。',
+    ev:[0,2,4,6,8,10,12,14].map((s,i)=>pC(s,'d','dyad',2,{n2:i%4<2?7:9,acc:s%8===0}))},
+  punk_down:{name:'全部ダウンの8分',type:'ストローク strumming',bars:1,
+    desc:'パワーコードを8分音符で全部ダウン(振り下ろし)。速くても腕を止めない。パンクはこれ1つで1曲いける。',
+    ev:[0,2,4,6,8,10,12,14].map(s=>pC(s,'d','pw',2,{acc:s%4===0}))},
+  punk_pmopen:{name:'ミュート→全開',type:'カッティング',bars:1,
+    desc:'前半はブリッジミュート(PM)で抑えて、後半で手を浮かせて全開にする。「ためて、爆発」の一番かんたんな形。',
+    ev:[pM(0,'pw',{acc:1}),pM(2,'pw'),pM(4,'pw'),pM(6,'pw'),pC(8,'d','pw',2,{acc:1}),pC(10,'d','pw',2),pC(12,'d','pw',2,{acc:1}),pC(14,'d','pw',2)]},
+  ani_root:{name:'ルート弾きの疾走8分',type:'単音フレーズ',bars:1,
+    desc:'コードの一番下の音(ルート)だけを8分音符で刻む。速い曲でもまずこれで乗り切れる。ベースと同じ動きなので、バンドの土台になる。',
+    ev:[0,2,4,6,8,10,12,14].map(s=>pN(s,0,2,{acc:s%8===0}))},
+  metal_gallop:{name:'ギャロップ',type:'カッティング',bars:1,
+    desc:'「ダッ・ダダ、ダッ・ダダ」と馬が走るようなリズムをブリッジミュート(PM)で刻む。メタルの代表的な刻み方。',
+    ev:[pC(0,'d','pw',2,{acc:1}),pM(2,'pw'),pM(3,'pw'),pM(4,'pw',{acc:1}),pM(6,'pw'),pM(7,'pw'),pC(8,'d','pw',2,{acc:1}),pM(10,'pw'),pM(11,'pw'),pM(12,'pw',{acc:1}),pM(14,'pw'),pM(15,'pw')]},
+  metal_riff:{name:'半音でぶつけるリフ',type:'リフ riff',bars:1,
+    desc:'ルートを連打しながら、すぐ上の半音(♭2)や、ルートから半音6つ上の音(♭5)をはさむ。この2つの音が、メタルの不気味さの正体。',
+    ev:[pN(0,0,1,{acc:1}),pN(1,0,1),pN(2,1,2,{acc:1}),pN(4,0,1),pN(5,0,1),pN(6,3,2),pN(8,0,1,{acc:1}),pN(9,0,1),pN(10,1,1),pN(11,0,1),pN(12,6,2,{acc:1}),pN(14,5,1),pN(15,3,1)]},
+  doom_riff:{name:'引きずる重いリフ',type:'リフ riff',bars:1,
+    desc:'音を長く伸ばして、ゆっくり半音でずり下がる。速さはいらない。1音ごとに「重さ」を感じながら弾く。',
+    ev:[pN(0,0,6,{acc:1}),pN(6,3,2),pN(8,1,6,{acc:1}),pN(14,0,2)]},
+  sg_wash:{name:'大きくゆっくりストローク',type:'ストローク strumming',bars:2,
+    desc:'2拍ずつ大きく振り下ろして、鳴らしっぱなしにする。音が重なって溶け合う「音の壁」を作る。',
+    ev:[pC(0,'d','full',8,{acc:1}),pC(8,'u','full',8),pC(16,'d','full',12,{acc:1}),pC(28,'u','top',4)]},
+  sg_arp:{name:'にじむアルペジオ',type:'アルペジオ arpeggio',bars:2,
+    desc:'1本ずつゆっくり鳴らして、前の音を止めずに重ねていく。深い残響と混ざって、輪郭がぼやけていくのが気持ちいい。',
+    ev:[pA(0,0,8,{acc:1}),pA(3,2,8),pA(6,3,8),pA(10,5,6),pA(16,1,8,{acc:1}),pA(19,3,8),pA(22,4,8),pA(26,5,6)]},
+  blues_lick:{name:'ブルースのお決まりフレーズ',type:'ソロ solo',bars:1,
+    desc:'マイナーペンタに、半音6つ上の音(♭5:ブルーノート)を通り道として足して下りてくる。最後の♭3は少しだけチョーキング(b)して、明るい3度に寄せる。',
+    ev:[pN(0,10,2,{o:12,acc:1}),pN(2,12,2,{o:12}),pN(4,10,1,{o:12}),pN(5,7,1,{o:12}),pN(6,6,1,{o:12}),pN(7,5,1,{o:12}),pN(8,3,2,{o:12,b:1,acc:1}),pN(10,0,6,{o:12})]},
+  funk_cut:{name:'16分のカッティング',type:'カッティング',bars:1,
+    desc:'高い弦だけで、鳴らす音とミュート(x)を16分音符で混ぜる。手はずっと上下に振り続けて、鳴らすところだけ弦を押さえる力をゆるめない。',
+    ev:[pC(0,'d','top',1,{acc:1}),pX(1,'u','top'),pX(2,'d','top'),pC(3,'u','top',1),pX(4,'d','top'),pX(5,'u','top'),pC(6,'d','top',1,{acc:1}),pX(7,'u','top'),pX(8,'d','top'),pX(9,'u','top'),pC(10,'d','top',1),pC(11,'u','top',1),pX(12,'d','top'),pX(13,'u','top'),pC(14,'d','top',1,{acc:1}),pX(15,'u','top')]},
+  funk_single:{name:'単音カッティング',type:'単音フレーズ',bars:1,
+    desc:'コードではなく1本の弦で、ルート・5度・♭7をミュートと混ぜて刻む。ベースとからむように弾くと、それだけでファンクになる。',
+    ev:[pN(0,0,1,{o:12,acc:1}),pX(1,'u','top'),pN(2,10,1,{o:12}),pN(3,0,1,{o:12}),pX(4,'d','top'),pX(5,'u','top'),pN(6,7,1,{o:12,acc:1}),pN(7,10,1,{o:12}),pX(8,'d','top'),pX(9,'u','top'),pN(10,0,1,{o:12}),pX(11,'u','top'),pN(12,12,1,{o:12,acc:1}),pN(13,10,1,{o:12}),pN(14,7,2,{o:12})]},
+  disco_16:{name:'ディスコの16分刻み',type:'カッティング',bars:1,
+    desc:'16分音符を全部振って、表はコード、裏はミュート。4つ打ちのキックの上で、ずっと細かく回り続ける。',
+    ev:[...Array(16)].map((_,i)=>i%2===0?pC(i,'d','top',1,{acc:i%4===2}):pX(i,'u','top'))},
+  jazz_comp:{name:'4つ切り',type:'カッティング',bars:1,
+    desc:'1拍ずつ短くコードを刻む。押さえるのはルート・7th・3度の3音だけ(シェルボイシング shell voicing)。2拍目と4拍目を少し強く。',
+    ev:[0,4,8,12].map(s=>pC(s,'d','shell',2,{acc:s===4||s===12}))},
+  jazz_charleston:{name:'チャールストン',type:'カッティング',bars:1,
+    desc:'1拍目と、2拍目の裏(跳ねたあと)にだけコードを置く。音が少ないぶん、ドラムとベースのノリが聞こえる。ジャズの伴奏の基本形。',
+    ev:[pC(0,'d','shell',3,{acc:1}),pC(6,'d','shell',2,{acc:1})]},
+  jazz_line:{name:'コードの音を順番に',type:'単音フレーズ',bars:1,
+    desc:'ルート→3度→5度→7th と、コードの音を1拍ずつ上がる。これだけでアドリブ(即興)っぽく聞こえる、ジャズの第一歩。',
+    ev:[pN(0,0,4,{o:12,acc:1}),pN(4,'c3',4,{o:12}),pN(8,'c5',4,{o:12}),pN(12,'c7',4,{o:12})]},
+  reggae_skank:{name:'裏で「チャッ」',type:'カッティング',bars:1,
+    desc:'2拍目と4拍目に、高い弦を短く「チャッ」。鳴らしたらすぐ左手の力を抜いて音を切る。レゲエのギターはほぼこれだけ。',
+    ev:[pC(4,'d','top',1,{acc:1}),pX(5,'u','top'),pC(12,'d','top',1,{acc:1}),pX(13,'u','top')]},
+  ska_up:{name:'裏拍のアップ',type:'カッティング',bars:1,
+    desc:'8分音符の裏(「1と2と」の「と」)を、アップ(振り上げ)で短く鳴らす。表は空振り。スカの陽気なノリの正体。',
+    ev:[2,6,10,14].map(s=>pC(s,'u','top',1,{acc:s===2||s===10}))},
+  bossa_comp:{name:'ボサノバの基本形',type:'アルペジオ arpeggio',bars:2,
+    desc:'親指はルートと5度を「ボン…ボン…」と一定に、ほかの指で和音を拍からずらして弾く(シンコペーション)。2小節でひと回り。',
+    ev:[pA(0,0,4,{acc:1}),pA(8,1,4),pA(16,0,4,{acc:1}),pA(24,1,4),pC(0,'d','top',2),pC(6,'d','top',2),pC(10,'d','top',2),pC(18,'d','top',2),pC(22,'d','top',2),pC(28,'d','top',2)]},
+  bossa_arp:{name:'ナイロン弦のアルペジオ',type:'アルペジオ arpeggio',bars:1,
+    desc:'7thコードを1音ずつ、ささやくように。親指で低い音、残りの指で高い音を順番に。',
+    ev:[pA(0,0,4,{acc:1}),pA(2,3,2),pA(4,4,2),pA(6,2,2),pA(8,1,4,{acc:1}),pA(10,3,2),pA(12,4,2),pA(14,2,2)]},
+  country_boom:{name:'ブン・チャッ',type:'ストローク strumming',bars:1,
+    desc:'拍の頭でベース音(1本だけ)、次の拍で高い弦をかき鳴らす。ベース音はルートと5度を交互に。カントリーの基本のリズム。',
+    ev:[pA(0,0,4,{acc:1}),pC(4,'d','top',2),pA(8,1,4,{acc:1}),pC(12,'d','top',2)]},
+  country_lick:{name:'メジャーペンタの軽快リフ',type:'単音フレーズ',bars:1,
+    desc:'メジャーペンタ(明るい5つの音)をミュート(x)と混ぜて、はねるように弾く。最初はハンマリング(h)で2から3度へ上がる。',
+    ev:[pN(0,4,2,{o:12,h:-2,acc:1}),pN(2,7,1,{o:12}),pX(3,'d','top'),pN(4,9,2,{o:12}),pN(6,7,1,{o:12}),pN(7,4,1,{o:12}),pN(8,2,2,{o:12,acc:1}),pN(10,0,2,{o:12}),pX(12,'d','top'),pN(13,7,1),pN(14,9,2)]},
+  edm_off:{name:'裏拍で短く',type:'カッティング',bars:1,
+    desc:'8分の裏だけ、高い弦を短く鳴らす。毎拍のキックとぶつからないから、4つ打ちの上でくっきり聞こえる。',
+    ev:[2,6,10,14].map(s=>pC(s,'d','top',1,{acc:1}))},
+  edm_arp:{name:'16分のくり返しアルペジオ',type:'アルペジオ arpeggio',bars:1,
+    desc:'高い4音を16分音符でぐるぐる回す。シンセのアルペジエーター(自動でアルペジオを弾く機械)のマネをギターでやる感じ。',
+    ev:[...Array(16)].map((_,i)=>pA(i,[2,3,4,5][i%4],1,{acc:i%4===0}))},
+  trap_bell:{name:'暗い単音ループ',type:'単音フレーズ',bars:2,
+    desc:'高めの音で、暗い音(♭3・♭5・♭2)を少しだけ置いてくり返す。音数を減らして、808ベースの低音にすき間をゆずる。',
+    ev:[pN(0,0,4,{o:12,acc:1}),pN(6,3,2,{o:12}),pN(10,7,3,{o:12}),pN(14,6,2,{o:12}),pN(16,0,4,{o:12,acc:1}),pN(22,1,2,{o:12}),pN(26,0,6,{o:12})]},
+  /* ---- v0.19:ビート+ギター(激しい) ---- */
+  hd_riff:{name:'低音のダークなリフ',type:'リフ riff',bars:1,
+    desc:'キックと同じタイミングで、低い弦をルートと♭2(半音上)だけで弾く。808ベースとギターが一緒に殴ってくる感じ。',
+    ev:[pN(0,0,3,{acc:1}),pN(3,0,2),pN(6,1,2),pN(8,0,2,{acc:1}),pN(10,0,2),pN(12,3,2),pN(14,1,2)]},
+  hd_stab:{name:'キックに合わせて叩くパワーコード',type:'カッティング',bars:1,
+    desc:'キックが鳴る場所にだけ、歪んだパワーコードをぶつけて伸ばす。弾く回数は3回だけ。すき間が迫力になる。',
+    ev:[pC(0,'d','pw',3,{acc:1}),pC(3,'d','pw',3),pC(10,'d','pw',6,{acc:1})]},
+  hd_lead:{name:'叫ぶような高音ループ',type:'ソロ solo',bars:2,
+    desc:'高い音を長く伸ばして、少しチョーキング(b)でゆがませる。レイジ(rage)系のビートで鳴っている、サイレンみたいなリードのギター版。',
+    ev:[pN(0,7,6,{o:12,b:1,acc:1}),pN(8,3,4,{o:12}),pN(12,1,4,{o:12}),pN(16,7,6,{o:12,b:1,acc:1}),pN(24,10,4,{o:12}),pN(28,3,4,{o:12})]},
+  /* ---- v0.19:アーティスト風 ---- */
+  mc_arp:{name:'add9のきらきらアルペジオ',type:'アルペジオ arpeggio',bars:2,
+    desc:'add9(コードに9度=レの音を足した響き)を1本ずつ鳴らす。ピアノで弾くようなきれいな流れで、歌メロを支える。',
+    ev:[pA(0,0,4,{acc:1}),pA(2,2,2),pA(4,3,2),pA(6,4,2),pA(8,5,4),pA(10,4,2),pA(12,3,2),pA(14,2,2),pA(16,0,4,{acc:1}),pA(18,2,2),pA(20,4,2),pA(22,3,2),pA(24,5,4),pA(28,4,4)]},
+  mc_strum16:{name:'16ビートのストローク',type:'ストローク strumming',bars:1,
+    desc:'16分音符で腕を振り、ところどころブラッシング(x:弦をミュートしたまま「シャッ」と鳴らす)を混ぜる。サビで一気に広がる、ポップロックの王道。',
+    ev:[pC(0,'d','full',2,{acc:1}),pC(2,'d','full',1),pC(3,'u','full',1),pX(4,'d','full'),pC(6,'u','full',2),pC(8,'d','full',2,{acc:1}),pC(10,'d','full',1),pC(11,'u','full',1),pX(12,'d','full'),pC(13,'u','full',1),pC(14,'d','full',1),pC(15,'u','full',1)]},
+  jm_thumb:{name:'親指ベース+はじくコード',type:'カッティング',bars:1,
+    desc:'親指で低い音、ほかの指で高い弦をはじいたり、弦をたたいて「パチッ」(x)と鳴らしたりする。ギター1本でドラムとベースまで鳴らす弾き方。',
+    ev:[pA(0,0,2,{acc:1}),pC(2,'u','top',1),pX(4,'d','top'),pA(6,1,2),pC(7,'u','top',1),pA(8,0,2,{acc:1}),pC(10,'u','top',1),pX(12,'d','top'),pC(14,'u','top',1),pA(15,1,1)]},
+  jm_lick:{name:'♭3→3のブルージーな一言',type:'ソロ solo',bars:1,
+    desc:'暗い♭3から明るい3度へハンマリング(h)で上がって、メジャーペンタで下りてくる。明るいコードの上で、一瞬だけブルースの影をのぞかせる。',
+    ev:[pN(0,4,2,{o:12,h:-1,acc:1}),pN(2,7,2,{o:12}),pN(4,9,2,{o:12}),pN(6,7,1,{o:12}),pN(7,4,1,{o:12}),pN(8,2,2,{o:12,acc:1}),pN(10,0,6,{o:12})]},
+  lp_clean:{name:'静かな単音ループ',type:'アルペジオ arpeggio',bars:1,
+    desc:'高い音を中心に、コードの音を8分音符でくり返す。Aメロのラップの後ろで静かに鳴らして、サビの爆発との差を作る。',
+    ev:[5,3,4,3,5,3,2,3].map((v,i)=>pA(i*2,v,2,{acc:i%4===0}))},
+  lp_wall:{name:'サビの轟音の壁',type:'ストローク strumming',bars:1,
+    desc:'歪んだコードを2拍ずつ大きく鳴らしきる。細かく刻まないほうが、音が分厚く聞こえる。',
+    ev:[pC(0,'d','full',8,{acc:1}),pC(8,'d','full',6,{acc:1}),pC(14,'u','full',2)]},
+  rh_dbl:{name:'ダブルストップのファンクリフ',type:'ダブルストップ double stop',bars:1,
+    desc:'高い2本だけを、スライド(/)とミュート(x)を混ぜて刻む。コードを全部鳴らさないから、ベースとドラムのすき間に入り込める。',
+    ev:[pC(0,'d','top2',2,{acc:1}),pC(2,'d','top2',1,{sl:-2}),pX(3,'u','top2'),pC(4,'d','top2',2),pX(6,'d','top'),pC(7,'u','top2',1),pC(8,'d','top2',2,{acc:1,sl:-2}),pX(10,'d','top'),pC(11,'u','top2',1),pC(12,'d','top2',4)]},
+  bp_arp:{name:'高い音に戻ってくるアルペジオ',type:'アルペジオ arpeggio',bars:1,
+    desc:'低い音と高い音を交互に鳴らして、何度も同じ高い音に戻ってくる。鳴りっぱなしの高い音が、景色が広がるような響きを作る。',
+    ev:[0,5,3,5,1,5,3,4].map((v,i)=>pA(i*2,v,3,{acc:i%4===0}))}
+
 };
 const SUBS={
   pops:[
@@ -738,6 +856,7 @@ const SUBS={
   ],
   hiphop:[
     {id:'mellowgtr',name:'ビート+ギター(メロウ)',era:'2010年代〜',pat:'mellow',bpm:84,tone:'clean',rev:0.28,style:'seventh',swing16:0.6,trim:1.15,rec:['minor','dorian','major'],presets:{minor:[['メロウ定番 iv7–♭VII7–♭IIImaj7–♭VImaj7',[3,6,2,5]],['i7–iv7',[0,3]]],dorian:[['i7–IV7',[0,3]]],major:[['IVmaj7–iii7–ii7–Imaj7',[3,2,1,0]]]},phrases:[PH.mellow_arp,PH.mellow_dbl,PH.mellow_hammer],desc:'ドラムとベースだけのビートに、ギターのループ(くり返すフレーズ)を乗せるスタイル。日本語ラップのメロウな曲によく使われる。',point:'ギターは歌やラップのすき間を埋める役。同じフレーズを何回もくり返すのが正解。'},
+    {id:'ragegtr',name:'ビート+ギター(激しい)',era:'2020年代',pat:'hard',bpm:150,tone:'fuzz',style:'triad',swing16:0,trim:0.7,rec:['minor','phrygian','harmonic'],presets:{minor:[['ダーク i–♭VI',[0,5]],['i–♭VI–♭VII–♭VI',[0,5,6,5]]],phrygian:[['不穏 i–♭II',[0,1]]],harmonic:[['i–♭VI–V',[0,5,4,4]]]},phrases:[PH.hd_riff,PH.hd_stab,PH.hd_lead],desc:'トラップのビート(細かいハイハットと太い808ベース)に、思いきり歪ませたギターを乗せる。洋楽のレイジ(rage)系や、激しい日本語ラップの後ろで鳴っているような音。',point:'ギターは弾きすぎない。キックと808が鳴る場所に合わせて、少ない音で殴る。'},
     {id:'boombap',name:'ブーンバップ',era:'90年代',pat:'hiphop',bpm:90,rec:['minor','dorian'],desc:'太いキック(ブーン)とスネア(バップ)が主役の90年代のヒップホップ。',point:'少し跳ねたリズムに乗って、弾きすぎない。'},
     {id:'trap',name:'トラップ',era:'2010年代〜',pat:'trap',bpm:140,tone:'lofi',swing16:0,rec:['minor','harmonic','phrygian'],desc:'細かく連打するハイハットと、長く伸びる低音(808ベース)が特徴。スネアは3拍目だけ(ハーフタイム)。',point:'暗めのスケールで、音数を極端に減らすとトラップっぽい。'},
     {id:'lofihh',name:'ローファイ・ヒップホップ',era:'2010年代〜',pat:'hiphop',bpm:75,tone:'lofi',rev:0.25,swing16:0.62,rec:['dorian','major','minor'],desc:'わざと音をこもらせた、勉強や作業のBGMで人気のゆるいビート。',point:'7thコードを1音ずつ、ゆっくり。'},
@@ -795,7 +914,12 @@ const SUBS={
   artist:[
     {id:'bz',name:'ギターヒーロー系ハードロック',era:'参考:B\'z',ref:'B\'z',pat:'jrock',bpm:136,tone:'dist',style:'triad',rec:['mixolydian','minor','major'],presets:{mixolydian:[['I–♭VII–IV–I',[0,6,3,0]],['I–IV–♭VII–IV',[0,3,6,3]]],minor:[['疾走 i–♭VI–♭VII–i',[0,5,6,0]]],major:[['I–V–vi–IV',[0,4,5,3]]]},phrases:[PH.bz_riff,PH.bz_chug,PH.bz_bend],desc:'歪んだギターのリフ、ザクザクの刻み、泣きのチョーキング。ギターが歌と同じくらい主役になる、90年代から続く日本のハードロック。',point:'リフとソロはマイナーペンタ。明るいコードの上で暗めの音を弾くぶつかりが、ハードロックの味。'},
     {id:'tk',name:'ハイトーン轟音オルタナ',era:'参考:凛として時雨',ref:'凛として時雨',pat:'alt',bpm:172,tone:'fuzz',style:'add9',rec:['minor','melodic','phrygian'],presets:{minor:[['i–♭VI–♭VII–iv',[0,5,6,3]],['iv–v–♭VI–♭VII',[3,4,5,6]]]},phrases:[PH.tk_tap,PH.tk_cut,PH.tk_kime],desc:'速いテンポ、轟音、きらきらした高音、急に止まるキメ。静かと爆発を行き来する、張りつめた空気のスタイル。',point:'拍子を7/8などに変えると、つんのめるような緊張感が出る。'},
-    {id:'oasis',name:'ブリットポップの壁ストローク',era:'参考:Oasis',ref:'Oasis',pat:'brit',bpm:86,tone:'crunch',rev:0.26,style:'triad',rec:['major','mixolydian','minor'],presets:{major:[['I–V–vi–III–IV–V',[0,4,5,SP3,3,4]],['I–V–vi–IV',[0,4,5,3]]],mixolydian:[['I–♭VII–IV–I',[0,6,3,0]]]},phrases:[PH.strum,PH.drone,PH.eighth],desc:'厚いストロークの壁と、肩を組んで歌えるメロディ。高い弦を鳴らしっぱなしにしてコードを変えるのが特徴。',point:'うまさより、止まらずにかき鳴らし続けること。'}
+    {id:'oasis',name:'ブリットポップの壁ストローク',era:'参考:Oasis',ref:'Oasis',pat:'brit',bpm:86,tone:'crunch',rev:0.26,style:'triad',rec:['major','mixolydian','minor'],presets:{major:[['I–V–vi–III–IV–V',[0,4,5,SP3,3,4]],['I–V–vi–IV',[0,4,5,3]]],mixolydian:[['I–♭VII–IV–I',[0,6,3,0]]]},phrases:[PH.strum,PH.drone,PH.eighth],desc:'厚いストロークの壁と、肩を組んで歌えるメロディ。高い弦を鳴らしっぱなしにしてコードを変えるのが特徴。',point:'うまさより、止まらずにかき鳴らし続けること。'},
+    {id:'mrchildren',name:'歌メロ重視のポップロック',era:'参考:Mr.Children',ref:'Mr.Children',pat:'pops',bpm:132,tone:'crunch',rev:0.2,style:'add9',rec:['major','minor','lydian'],presets:{major:[['I–III7–vi–IV',[0,SP37,5,3]],['カノン進行 I–V–vi–iii–IV–I–IV–V',[0,4,5,2,3,0,3,4]],['王道進行 IV–V–iii–vi',[3,4,2,5]]],minor:[['i–♭VI–♭VII–i',[0,5,6,0]]]},phrases:[PH.mc_arp,PH.mc_strum16,PH.eighth],desc:'ピアノのようなきれいなアルペジオ、サビで一気に広がるストローク、キーの外から1つだけ借りるコード。歌メロをいちばん大事にする、日本のポップロックの王道。',point:'サビの前に「III7」(キーの外の明るいコード)を1つ入れると、グッと胸に来る。'},
+    {id:'johnmayer',name:'ブルージーな弾き語りギター',era:'参考:John Mayer',ref:'John Mayer',pat:'pops',bpm:88,tone:'clean',rev:0.2,style:'seventh',swing16:0.56,trim:1.1,rec:['major','mixolydian','minor'],presets:{major:[['Imaj7–IVmaj7',[0,3]],['I–vi–IV–V',[0,5,3,4]]],mixolydian:[['I7–IV7',[0,3]]],minor:[['i7–iv7',[0,3]]]},phrases:[PH.jm_thumb,PH.jm_lick,PH.mellow_dbl],desc:'ブルースのフレーズを、きれいな歌ものに混ぜるスタイル。親指でベースを弾きながら、ほかの指でコードをはじく。',point:'明るいコードの上で、♭3(暗い音)から3度(明るい音)へハンマリングで上がると、一気にブルージーになる。'},
+    {id:'linkinpark',name:'ラップ×轟音のハイブリッド',era:'参考:Linkin Park',ref:'Linkin Park',pat:'numetal',bpm:105,tone:'dist',style:'triad',rec:['minor','harmonic','phrygian'],presets:{minor:[['i–♭VI–♭III–♭VII',[0,5,2,6]],['i–♭VI–♭VII',[0,5,6,6]]],harmonic:[['i–♭VI–V',[0,5,4,4]]]},phrases:[PH.lp_clean,PH.lp_wall,PH.nu_chug],desc:'Aメロはラップに静かな単音のループ、サビで一気に歪んだギターの壁。静と動の差で聞かせる、ニューメタルの代表的なスタイル。',point:'サビは細かく弾かず、コードを長く鳴らしきるほうが分厚く聞こえる。'},
+    {id:'rhcp',name:'ファンクロックのカッティング',era:'参考:Red Hot Chili Peppers',ref:'Red Hot Chili Peppers',pat:'funk',bpm:96,tone:'crunch',style:'triad',rec:['dorian','mixolydian','minor'],presets:{dorian:[['i–IV',[0,3]]],mixolydian:[['I–♭VII–IV',[0,6,3]]],minor:[['i–♭VII–♭VI',[0,6,5]]]},phrases:[PH.funk_cut,PH.rh_dbl,PH.funk_single],desc:'ファンクのカッティングを、ロックの音量でやるスタイル。ベースとドラムと会話するような、すき間の多いギター。',point:'弾かない16分も手は振り続ける。音が出るのはほんの一部。'},
+    {id:'bump',name:'物語系ギターロック',era:'参考:BUMP OF CHICKEN',ref:'BUMP OF CHICKEN',pat:'rock',bpm:150,tone:'crunch',rev:0.2,style:'add9',rec:['major','minor'],presets:{major:[['I–V–vi–IV',[0,4,5,3]],['IV–V–vi',[3,4,5,5]],['vi–IV–I–V',[5,3,0,4]]]},phrases:[PH.drone,PH.bp_arp,PH.eighth],desc:'まっすぐな8ビートに、高い弦を鳴らしっぱなしにしたコード。言葉を届けるために、ギターは前に出すぎず景色を描く。',point:'高い2本を同じ場所で押さえたままコードを変えると、きらきらした広がりが出る。'}
   ],
   country:[
     {id:'classiccountry',name:'クラシック・カントリー',era:'50-60年代',pat:'country',bpm:112,desc:'「ブン・チャッ」の素朴なカントリー。',point:'ベース音と和音を交互に。'},
@@ -803,6 +927,19 @@ const SUBS={
   ]
 };
 
+
+// v0.19:昔からあるジャンルにもフレーズ。親ジャンルに付けると、その下のサブジャンルにも引き継がれる
+const BASE_PH={
+  pops:[PH.strum,PH.pop_arp,PH.eighth],metal:[PH.metal_gallop,PH.metal_riff,PH.nu_chug],shoegaze:[PH.sg_wash,PH.drone,PH.sg_arp],
+  blues:[PH.boogie,PH.blues_lick,PH.bz_bend],hiphop:[PH.mellow_arp,PH.mellow_dbl],rock:[PH.rock_pw,PH.boogie,PH.bz_riff],
+  punk:[PH.punk_down,PH.punk_pmopen],anison:[PH.ani_root,PH.eighth,PH.tk_kime],funk:[PH.funk_cut,PH.funk_single],
+  jazz:[PH.jazz_comp,PH.jazz_charleston,PH.jazz_line],rnb:[PH.mellow_arp,PH.mellow_dbl,PH.mellow_hammer],reggae:[PH.reggae_skank,PH.ska_up],
+  bossa:[PH.bossa_comp,PH.bossa_arp],country:[PH.country_boom,PH.country_lick],edm:[PH.edm_off,PH.edm_arp],folk:[PH.strum,PH.folk_bass,PH.folk_3f]
+};
+const SUB_PH={citypop:[PH.funk_cut,PH.pop_arp],jpop90:[PH.edm_off,PH.strum],rnr:[PH.boogie,PH.rock_pw],doom:[PH.doom_riff,PH.metal_riff],
+  trap:[PH.trap_bell,PH.hd_stab],drill:[PH.trap_bell,PH.hd_riff],disco:[PH.disco_16,PH.funk_cut],ska:[PH.ska_up,PH.reggae_skank],bluesrock:[PH.boogie,PH.blues_lick,PH.bz_riff]};
+Object.entries(BASE_PH).forEach(([k,v])=>{if(GENRES[k])GENRES[k].phrases=v;});
+Object.values(SUBS).flat().forEach(x=>{if(SUB_PH[x.id])x.phrases=SUB_PH[x.id];});
 
 const TUNING=[64,59,55,50,45,40];
 const STR=['1弦','2弦','3弦','4弦','5弦','6弦'];
@@ -1264,7 +1401,7 @@ function applyGenreAudio(){
   if(bkChain)bkChain.out.disconnect();if(leadChain)leadChain.out.disconnect();
   bkChain=makeChain(g.tone,[buses.gtr]);leadChain=makeChain(g.tone,[master,revSend]);
   revSend.gain.value=g.rev;lastStrum=null;
-  trim.gain.value=G().trim||({pops:1,metal:0.85,shoegaze:0.8,blues:0.7,hiphop:1.1,rock:0.55,punk:0.8,anison:0.8,funk:1.3,jazz:1.4,rnb:1.05,kayou:1,trap:1.05,dnb:1.05,breakdown:0.8,futurebass:0.95,reggae:1.5,bossa:1.4,country:1.5,edm:1.25,jrock:0.6,alt:0.6,brit:0.8,numetal:0.75,folk:1.35,folkfinger:1.35,mellow:1.15,artist:0.6})[patKey()]||1;
+  trim.gain.value=G().trim||({pops:1,metal:0.85,shoegaze:0.8,blues:0.7,hiphop:1.1,rock:0.55,punk:0.8,anison:0.8,funk:1.3,jazz:1.4,rnb:1.05,kayou:1,trap:1.05,dnb:1.05,breakdown:0.8,futurebass:0.95,reggae:1.5,bossa:1.4,country:1.5,edm:1.25,jrock:0.6,alt:0.6,brit:0.8,numetal:0.75,folk:1.35,folkfinger:1.35,mellow:1.15,hard:0.7,artist:0.6})[patKey()]||1;
 }
 function env(g,t,peak,att,dec){g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(peak,0.0002),t+att);g.gain.exponentialRampToValueAtTime(0.0001,t+att+dec);}
 
@@ -1547,6 +1684,13 @@ const PAT={
     if(b===0||b===10)bass808(t,root,sp*(b===0?9:5.5),0.5);
     if(b%2===0){const i=Math.min([1,3,4,5,4,3,2,3][b/2],vo.length-1);strum(t,[vo[i]],{vel:0.45,choke:false,dur:sp*3});}
   },
+  hard(c){const {t,b,sp,vo,root,first,chStart}=c;
+    if([0,3,10].includes(b))kick(t,b===0?1:0.85);if(b===8)snare(t,1,1.2);
+    if(b%2===0)hatC(t,b%4===0?0.5:0.36);if(b===6||b===14){hatC(t+sp/3,0.28);hatC(t+sp*2/3,0.3);}
+    if(first||chStart&&b===0)crash(t,0.5);
+    if(b===0)bass808(t,root,sp*7,0.7);if(b===10)bass808(t,root,sp*5,0.6);
+    if(b===0||b===10)strum(t,vo.slice(0,3),{vel:0.55,spread:0.005,dur:sp*(b===0?6:5)});
+  },
   artist(c){PAT.jrock(c);},
   hiphop(c){const {t,b,sp,vo,root,ch,chStart,per}=c;
     if(b===0)kick(t,1);if(b===7)kick(t,0.55);if(b===10)kick(t,0.9);
@@ -1557,7 +1701,7 @@ const PAT={
     if(b%2===0){const i=Math.min([1,3,4,5,4,3,2,3][b/2],vo.length-1);strum(t,[vo[i]],{vel:0.5,choke:false,dur:sp*3});}
   }
 };
-const ODDMAP={kayou:'pops',trap:'hiphop',dnb:'hiphop',breakdown:'metal',futurebass:'hiphop',rock:'pops',punk:'metal',anison:'pops',funk:'pops',jazz:'blues',rnb:'hiphop',reggae:'pops',bossa:'hiphop',country:'pops',edm:'hiphop',jrock:'pops',alt:'pops',brit:'pops',numetal:'metal',folk:'pops',folkfinger:'pops',mellow:'hiphop',artist:'pops'};
+const ODDMAP={kayou:'pops',trap:'hiphop',dnb:'hiphop',breakdown:'metal',futurebass:'hiphop',rock:'pops',punk:'metal',anison:'pops',funk:'pops',jazz:'blues',rnb:'hiphop',reggae:'pops',bossa:'hiphop',country:'pops',edm:'hiphop',jrock:'pops',alt:'pops',brit:'pops',numetal:'metal',folk:'pops',folkfinger:'pops',mellow:'hiphop',hard:'hiphop',artist:'pops'};
 function ODD(c){
   const {t,b,sp,vo,root,ch,chStart,per,first,M}=c,g=ODDMAP[patKey()]||patKey();
   if(M.kick.includes(b))kick(t,b===0?1:0.8);
@@ -1629,13 +1773,14 @@ function evPos(e,ch,vo){
   }
   const set=e.set||'full',n=e.n||0;
   if(set==='oct'){let b=vo[0]+n;if(b-40+2>FRETS)b-=12;return [at(b,{s:5,f:b-40}),at(b+12,{s:3,f:b+12-50})];}
+  if(set==='dyad'){const r=vo[0]+n;return [at(r,{s:5,f:r-40}),at(r+(e.n2||7),posFor(r+(e.n2||7),f0))];}
   if(set==='drone'){
     const low=[0,1,2,3].filter(i=>i<vo.length).map(i=>at(vo[i],voPos(vo,i)||posFor(vo[i],f0)));
     const f2=(S.key+7-11+24)%12,f1=(S.key-4+12)%12;
     return [...low,at(59+f2,{s:1,f:f2}),at(64+f1,{s:0,f:f1})];
   }
   const all=vo.map((_,i)=>i);
-  const idx={full:all,top:all.slice(2),top2:all.slice(-2),pw:[0,1,2],low:[0,1]}[set]||all;
+  const idx={full:all,top:all.slice(2),top2:all.slice(-2),pw:[0,1,2],low:[0,1],shell:[0,2,3]}[set]||all;
   return idx.filter(i=>i<vo.length).map(i=>at(vo[i],voPos(vo,i)||posFor(vo[i],f0)));
 }
 function phraseIndex(ph){if(!ph._by){ph._by={};ph.ev.forEach(e=>{(ph._by[e.s]=ph._by[e.s]||[]).push(e);});}return ph._by;}
