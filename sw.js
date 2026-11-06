@@ -10,7 +10,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    fetch(e.request).then(res => {
+    // 端末に覚えてある古い版を使わず、毎回GitHubに最新を聞きに行く(つながらないときだけ保存版)
+    fetch(e.request, {cache: 'no-cache'}).then(res => {
       const copy = res.clone();
       caches.open(CACHE).then(c => c.put(e.request, copy));
       return res;
