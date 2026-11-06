@@ -270,7 +270,7 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
 </head>
 <body>
 <header class="top">
-  <div class="brand">Solodachi <span>v0.19</span></div>
+  <div class="brand">Solodachi <span>v0.20</span></div>
   <div class="nowc" id="nowchord"></div>
   <button class="play" id="play">▶ 伴奏</button>
 </header>
@@ -310,6 +310,7 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
     </div>
     <div class="lvdesc" id="phdesc"></div>
     <div class="phchord" id="phchord"></div>
+    <div class="note" id="phfit" hidden></div>
     <div class="tabwrap" id="phtab"></div>
     <div class="note" id="phodd" hidden>変拍子のコードでは、フレーズはお休みしてふつうの伴奏になるよ。</div>
     <details class="tabhelp"><summary>TAB譜の見方 <span class="en">how to read tabs</span></summary>
@@ -938,6 +939,8 @@ const BASE_PH={
 };
 const SUB_PH={citypop:[PH.funk_cut,PH.pop_arp],jpop90:[PH.edm_off,PH.strum],rnr:[PH.boogie,PH.rock_pw],doom:[PH.doom_riff,PH.metal_riff],
   trap:[PH.trap_bell,PH.hd_stab],drill:[PH.trap_bell,PH.hd_riff],disco:[PH.disco_16,PH.funk_cut],ska:[PH.ska_up,PH.reggae_skank],bluesrock:[PH.boogie,PH.blues_lick,PH.bz_riff]};
+// わざとキーの外の音(♭5・♭2など)を使うのが持ち味のフレーズ。自動で直さない
+['bz_riff','bz_bend','metal_riff','doom_riff','blues_lick','trap_bell','hd_riff','hd_lead'].forEach(k=>PH[k].ev.forEach(e=>e.raw=1));
 Object.entries(BASE_PH).forEach(([k,v])=>{if(GENRES[k])GENRES[k].phrases=v;});
 Object.values(SUBS).flat().forEach(x=>{if(SUB_PH[x.id])x.phrases=SUB_PH[x.id];});
 
@@ -1744,8 +1747,17 @@ function stop(){
 
 /* ================= フレーズの再生とTAB譜 ================= */
 function curPhrase(){const L=G().phrases;return L&&L.length?L[S.phr%L.length]:null;}
-function tokN(n,ch){
-  if(typeof n==='number')return n;
+// v0.20:単音の音がキーとコードから外れていたら半音ずらして寄せる(コードの音を優先)
+function fitN(n,ch){
+  const sc=MOODS[S.mood]&&MOODS[S.mood].chord;if(!sc)return n;
+  const key=sc.map(x=>(S.key+x)%12),pc=(ch.root+n)%12,ok=q=>ch.pcs.includes(q)||key.includes(q);
+  if(ok(pc))return n;
+  for(const d of [-1,1])if(ch.pcs.includes((pc+d+12)%12))return n+d;
+  for(const d of [-1,1])if(key.includes((pc+d+12)%12))return n+d;
+  return n;
+}
+function tokN(n,ch,raw){
+  if(typeof n==='number')return raw?n:fitN(n,ch);
   const iv=k=>ch.pcs[k]!=null?(ch.pcs[k]-ch.root+12)%12:null;
   if(n==='c3')return iv(1)!=null?iv(1):4;
   if(n==='c5')return iv(2)!=null?iv(2):7;
@@ -1764,7 +1776,7 @@ function voPos(vo,i){const s=5-i,f=vo[i]-TUNING[s];return (s>=0&&f>=0&&f<=FRETS)
 const at=(m,p)=>p?{m,s:p.s,f:p.f}:{m,s:null,f:null};
 function evPos(e,ch,vo){
   const f0=(ch.root-4+12)%12;
-  if(e.k==='n'){let m=vo[0]+tokN(e.n,ch)+(e.o||0);let p=posFor(m,f0);if(!p){m-=12;p=posFor(m,f0);}return [at(m,p)];}
+  if(e.k==='n'){let m=vo[0]+tokN(e.n,ch,e.raw)+(e.o||0);let p=posFor(m,f0);if(!p){m-=12;p=posFor(m,f0);}return [at(m,p)];}
   if(e.k==='a'){
     const i=Math.min(e.v,vo.length-1);let m=vo[i]+(e.o||0);
     if(!e.o)return [at(m,voPos(vo,i)||posFor(m,f0))];
@@ -1836,6 +1848,13 @@ function renderPhrase(){
   $('phtab').innerHTML=phraseTabHTML(ph,ch);
   $('phodd').hidden=S.meter==='4/4'&&!S.meters.some(x=>x&&x!=='4/4');
   $('phchord').textContent=`今のコード ${ch.name} の場合`;
+  const sc=MOODS[S.mood]&&MOODS[S.mood].chord,num=ph.ev.filter(e=>e.k==='n'&&typeof e.n==='number');
+  const moved=num.filter(e=>!e.raw&&fitN(e.n,ch)!==e.n).length;
+  const outs=sc?num.filter(e=>e.raw&&!ch.pcs.includes((ch.root+e.n)%12)&&!sc.map(x=>(S.key+x)%12).includes((ch.root+e.n)%12)).length:0;
+  const fit=$('phfit');
+  if(moved){fit.hidden=false;fit.textContent=`このキー(${moodName()})と ${ch.name} に合わせて、${moved}個の音を半音ずらしてるよ。外れた音を、いちばん近いコードの音かキーの音に寄せる。自分で作るときも同じ考え方でOK。`;}
+  else if(outs){fit.hidden=false;fit.textContent=`このフレーズは、わざとキーの外の音を${outs}個使ってる(ブルーノートなど)。ぶつかる響きが持ち味だから、直さずにそのまま弾こう。`;}
+  else fit.hidden=true;
 }
 $('phprev').addEventListener('click',()=>{const L=(G().phrases||[]).length;if(!L)return;S.phr=(S.phr+L-1)%L;renderPhrase();});
 $('phnext').addEventListener('click',()=>{const L=(G().phrases||[]).length;if(!L)return;S.phr=(S.phr+1)%L;renderPhrase();});
