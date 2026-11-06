@@ -270,7 +270,7 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
 </head>
 <body>
 <header class="top">
-  <div class="brand">Solodachi <span>v0.20</span></div>
+  <div class="brand">Solodachi <span>v0.21</span></div>
   <div class="nowc" id="nowchord"></div>
   <button class="play" id="play">▶ 伴奏</button>
 </header>
@@ -819,7 +819,29 @@ const PH={
     ev:[pC(0,'d','top2',2,{acc:1}),pC(2,'d','top2',1,{sl:-2}),pX(3,'u','top2'),pC(4,'d','top2',2),pX(6,'d','top'),pC(7,'u','top2',1),pC(8,'d','top2',2,{acc:1,sl:-2}),pX(10,'d','top'),pC(11,'u','top2',1),pC(12,'d','top2',4)]},
   bp_arp:{name:'高い音に戻ってくるアルペジオ',type:'アルペジオ arpeggio',bars:1,
     desc:'低い音と高い音を交互に鳴らして、何度も同じ高い音に戻ってくる。鳴りっぱなしの高い音が、景色が広がるような響きを作る。',
-    ev:[0,5,3,5,1,5,3,4].map((v,i)=>pA(i*2,v,3,{acc:i%4===0}))}
+    ev:[0,5,3,5,1,5,3,4].map((v,i)=>pA(i*2,v,3,{acc:i%4===0}))},
+  /* ---- v0.21:お気に入り曲リストから ---- */
+  gf_lead:{name:'すべる高音リード',type:'ソロ solo',bars:2,
+    desc:'高い音を長く伸ばして、半音下からスライド(/)で入る。Gファンクで鳴ってる「ピー」というシンセの音を、ギターでまねる弾き方。',
+    ev:[pN(0,12,6,{o:12,h:-2,acc:1}),pN(6,10,2,{o:12}),pN(8,7,6,{o:12}),pN(14,10,2,{o:12}),pN(16,12,4,{o:12,h:-2,acc:1}),pN(20,15,4,{o:12}),pN(24,12,8,{o:12,b:1})]},
+  ss_chop:{name:'切り刻んだサンプル風',type:'カッティング',bars:2,
+    desc:'古いソウルのレコードを細かく切って並べ直したように、コードを短く・拍からずらして鳴らす。鳴らさない場所の「間」がかっこよさ。',
+    ev:[pC(0,'d','full',3,{acc:1}),pC(3,'d','top',2),pC(7,'d','top',1),pC(10,'d','full',4,{acc:1}),pC(16,'d','full',3,{acc:1}),pC(19,'d','top',2),pC(22,'u','top',1),pC(26,'d','full',6,{acc:1})]},
+  ss_arp:{name:'ソウルのやわらかアルペジオ',type:'アルペジオ arpeggio',bars:1,
+    desc:'7thコードの上の音をゆっくり上下させる。ドラムが主役だから、ギターはレコードの奥で鳴ってるくらいの小ささで。',
+    ev:[pA(0,1,4,{acc:1}),pA(4,3,4),pA(8,4,4,{acc:1}),pA(12,3,4)]},
+  ar_pedal:{name:'ペダル刻み+コードの決め',type:'カッティング',bars:1,
+    desc:'低いルートを8分音符でずっと刻みながら(ペダル pedal)、ところどころでコードを大きく鳴らす。80年代のアリーナ(大きな会場)ロックのイントロでおなじみ。',
+    ev:[pC(0,'d','full',2,{acc:1}),pN(2,0,2),pN(4,0,2),pN(6,0,2),pC(8,'d','full',2,{acc:1}),pN(10,0,2),pC(12,'d','top',2,{acc:1}),pN(14,0,2)]},
+  pg_verse:{name:'鳴らしっぱなしのアルペジオ',type:'アルペジオ arpeggio',bars:1,
+    desc:'Aメロはコードを押さえて1本ずつゆっくり。サビで歪んだ壁に切り替える前の「静」の部分。前の音は止めずに残す。',
+    ev:[0,2,3,2,1,2,3,4].map((v,i)=>pA(i*2,v,4,{acc:i%4===0}))},
+  gl_arp:{name:'疾走イントロのアルペジオ',type:'アルペジオ arpeggio',bars:1,
+    desc:'高い弦を16分音符で回して、1拍目と3拍目だけ低い音を入れる。速いテンポで疾走感を出す、90年代J-ROCKのイントロの定番の形。',
+    ev:[...Array(16)].map((_,i)=>i%8===0?pA(i,0,2,{acc:1}):pA(i,[3,4,5,4][i%4],1))},
+  la_arp:{name:'きらめく9thのアルペジオ',type:'アルペジオ arpeggio',bars:2,
+    desc:'add9の9度(浮いた音)を中心に、高い音を16分音符でゆらゆら回す。コーラス(音を少し揺らすエフェクター)をかけたような、耽美(たんび)できれいな響き。',
+    ev:[...Array(32)].map((_,i)=>pA(i,[3,5,4,5][i%4],2,{acc:i%8===0}))}
 
 };
 const SUBS={
@@ -844,6 +866,8 @@ const SUBS={
     {id:'guitarrock',trim:0.65,name:'邦ギターロック',era:'2000年代',pat:'anison',bpm:160,tone:'crunch',style:'triad',rec:['major','minor'],desc:'日本のバンドに多い、ギターのコードストロークを中心にした疾走感のあるロック。',point:'8分の刻みとアクセントで、サビを前に押し出す。'},
     {id:'dancerock',trim:0.8,name:'4つ打ち邦ロック',era:'2010年代',pat:'edm',bpm:150,tone:'crunch',style:'triad',rec:['minor','major'],desc:'ダンスミュージックの4つ打ち(毎拍キック)を取り入れた邦ロック。フェスで手拍子しやすいノリ。',point:'ギターは裏拍で短く切ると、4つ打ちとよく噛み合う。'},
     {id:'jrock90',name:'90年代J-ROCK',era:'90年代',pat:'jrock',bpm:140,tone:'dist',style:'triad',rec:['major','mixolydian','minor'],presets:{major:[['王道進行 IV–V–iii–vi',[3,4,2,5]],['I–V–vi–IV',[0,4,5,3]]],mixolydian:[['I–♭VII–IV–I',[0,6,3,0]]]},phrases:[PH.jr_pm,PH.bz_riff,PH.eighth],desc:'ミリオンヒットを連発した90年代の日本のロック。歪んだギターのリフと、歌謡曲ゆずりの覚えやすいメロディを合わせたのが特徴。',point:'リフはマイナーペンタ、サビはコードの音。この2つを使い分けると一気に90年代っぽくなる。'},
+    {id:'arena80',name:'80年代アリーナロック',era:'80年代',pat:'rock',bpm:122,tone:'dist',rev:0.26,style:'triad',rec:['major','mixolydian','minor'],presets:{major:[['I–V–vi–IV',[0,4,5,3]],['I–IV–V–IV',[0,3,4,3]]],mixolydian:[['I–♭VII–IV–I',[0,6,3,0]]],minor:[['i–♭VI–♭VII–i',[0,5,6,0]]]},phrases:[PH.ar_pedal,PH.rock_pw,PH.bz_bend],desc:'大きな会場で何万人と一緒に歌うための80年代のロック。歪んだギターに深い残響、派手なギターソロ、みんなで叫べるサビ。',point:'サビはコードを大きく鳴らしきる。うまさより「でかさ」。'},
+    {id:'postgrunge',name:'ポストグランジ',era:'90年代後半-2000年代',pat:'rock',bpm:104,tone:'dist',style:'triad',rec:['minor','major','mixolydian'],presets:{minor:[['i–♭VI–♭III–♭VII',[0,5,2,6]],['i–♭VII–♭VI',[0,6,5,5]]],major:[['vi–IV–I–V',[5,3,0,4]]]},phrases:[PH.pg_verse,PH.lp_wall,PH.rock_pw],desc:'グランジの重さと荒さを残しつつ、ラジオで流れやすいように歌メロを聞きやすくしたアメリカのロック。静かなAメロと、歪んだ壁のサビの差が大きい。',point:'Aメロは弾く量を減らして、サビで一気に全部鳴らす。その差がこのジャンルのすべて。'},
     {id:'heiseialt',name:'平成オルタナ',era:'90年代後半-2000年代',pat:'alt',bpm:152,tone:'fuzz',style:'triad',rec:['minor','phrygian','dorian'],presets:{minor:[['i–♭VII–♭VI–♭VII',[0,6,5,6]],['i–iv–♭VII–i',[0,3,6,0]]]},phrases:[PH.alt_oct,PH.tk_kime,PH.eighth],desc:'ざらついた荒い音と、切れ味の鋭いギターで突っ走る平成の日本のオルタナティブロック。オクターブ奏法と、急に止まる「キメ」が目印。',point:'きれいに弾くより、鋭く短く。休む場所でキレを出す。'},
     {id:'ukrock',name:'UKロック/ブリットポップ',era:'90年代',pat:'brit',bpm:92,tone:'crunch',rev:0.24,style:'triad',rec:['major','mixolydian','minor'],presets:{major:[['I–V–vi–IV',[0,4,5,3]],['I–V–vi–III–IV–V',[0,4,5,SP3,3,4]]]},phrases:[PH.strum,PH.drone,PH.eighth],desc:'イギリスの90年代ロック。厚いストロークに、みんなで歌えるメロディ。アコギとエレキを重ねて音の壁を作る。',point:'ストロークは止めずに腕を振り続けるのがコツ。弾かない拍も空振りする。'}
   ],
@@ -858,6 +882,8 @@ const SUBS={
   hiphop:[
     {id:'mellowgtr',name:'ビート+ギター(メロウ)',era:'2010年代〜',pat:'mellow',bpm:84,tone:'clean',rev:0.28,style:'seventh',swing16:0.6,trim:1.15,rec:['minor','dorian','major'],presets:{minor:[['メロウ定番 iv7–♭VII7–♭IIImaj7–♭VImaj7',[3,6,2,5]],['i7–iv7',[0,3]]],dorian:[['i7–IV7',[0,3]]],major:[['IVmaj7–iii7–ii7–Imaj7',[3,2,1,0]]]},phrases:[PH.mellow_arp,PH.mellow_dbl,PH.mellow_hammer],desc:'ドラムとベースだけのビートに、ギターのループ(くり返すフレーズ)を乗せるスタイル。日本語ラップのメロウな曲によく使われる。',point:'ギターは歌やラップのすき間を埋める役。同じフレーズを何回もくり返すのが正解。'},
     {id:'ragegtr',name:'ビート+ギター(激しい)',era:'2020年代',pat:'hard',bpm:150,tone:'fuzz',style:'triad',swing16:0,trim:0.7,rec:['minor','phrygian','harmonic'],presets:{minor:[['ダーク i–♭VI',[0,5]],['i–♭VI–♭VII–♭VI',[0,5,6,5]]],phrygian:[['不穏 i–♭II',[0,1]]],harmonic:[['i–♭VI–V',[0,5,4,4]]]},phrases:[PH.hd_riff,PH.hd_stab,PH.hd_lead],desc:'トラップのビート(細かいハイハットと太い808ベース)に、思いきり歪ませたギターを乗せる。洋楽のレイジ(rage)系や、激しい日本語ラップの後ろで鳴っているような音。',point:'ギターは弾きすぎない。キックと808が鳴る場所に合わせて、少ない音で殴る。'},
+    {id:'gfunk',name:'Gファンク',era:'90年代',pat:'hiphop',bpm:92,tone:'clean',rev:0.2,style:'seventh',swing16:0.58,rec:['minor','dorian','mixolydian'],presets:{minor:[['ループ i7–iv7',[0,3]],['i7–♭VII7',[0,6]]],dorian:[['i7–IV7',[0,3]]],mixolydian:[['I7–IV7',[0,3]]]},phrases:[PH.gf_lead,PH.funk_cut,PH.mellow_dbl],desc:'アメリカ西海岸(LA)の90年代ヒップホップ。70年代のファンクをゆったりさせて、高い「ピー」というシンセのリードと太いベースを乗せた。車で流すための音楽とも言われる。',point:'テンポはゆっくり、ノリは少し跳ねる。2つのコードを行き来するだけで十分。'},
+    {id:'soulsample',name:'ソウルサンプリング',era:'2000年代',pat:'hiphop',bpm:88,tone:'lofi',rev:0.22,style:'seventh',swing16:0.56,rec:['major','minor','harmonic'],presets:{major:[['Imaj7–vi7–ii7–V7',[0,5,1,4]],['IVmaj7–iii7–vi7',[3,2,5,5]]],minor:[['i7–♭VImaj7',[0,5]]],harmonic:[['i–♭VII–♭VI–V',[0,6,5,4]]]},phrases:[PH.ss_chop,PH.ss_arp,PH.mellow_hammer],desc:'昔のソウルのレコードを切り取って(サンプリング sampling)ループさせ、その上でラップする2000年代のスタイル。早回しした歌声や、ストリングス(弦楽器)の切れ端がよく使われる。',point:'ギターで「レコードの切れ端」を作るつもりで。短く切って、同じ形をくり返す。'},
     {id:'boombap',name:'ブーンバップ',era:'90年代',pat:'hiphop',bpm:90,rec:['minor','dorian'],desc:'太いキック(ブーン)とスネア(バップ)が主役の90年代のヒップホップ。',point:'少し跳ねたリズムに乗って、弾きすぎない。'},
     {id:'trap',name:'トラップ',era:'2010年代〜',pat:'trap',bpm:140,tone:'lofi',swing16:0,rec:['minor','harmonic','phrygian'],desc:'細かく連打するハイハットと、長く伸びる低音(808ベース)が特徴。スネアは3拍目だけ(ハーフタイム)。',point:'暗めのスケールで、音数を極端に減らすとトラップっぽい。'},
     {id:'lofihh',name:'ローファイ・ヒップホップ',era:'2010年代〜',pat:'hiphop',bpm:75,tone:'lofi',rev:0.25,swing16:0.62,rec:['dorian','major','minor'],desc:'わざと音をこもらせた、勉強や作業のBGMで人気のゆるいビート。',point:'7thコードを1音ずつ、ゆっくり。'},
@@ -920,7 +946,9 @@ const SUBS={
     {id:'johnmayer',name:'ブルージーな弾き語りギター',era:'参考:John Mayer',ref:'John Mayer',pat:'pops',bpm:88,tone:'clean',rev:0.2,style:'seventh',swing16:0.56,trim:1.1,rec:['major','mixolydian','minor'],presets:{major:[['Imaj7–IVmaj7',[0,3]],['I–vi–IV–V',[0,5,3,4]]],mixolydian:[['I7–IV7',[0,3]]],minor:[['i7–iv7',[0,3]]]},phrases:[PH.jm_thumb,PH.jm_lick,PH.mellow_dbl],desc:'ブルースのフレーズを、きれいな歌ものに混ぜるスタイル。親指でベースを弾きながら、ほかの指でコードをはじく。',point:'明るいコードの上で、♭3(暗い音)から3度(明るい音)へハンマリングで上がると、一気にブルージーになる。'},
     {id:'linkinpark',name:'ラップ×轟音のハイブリッド',era:'参考:Linkin Park',ref:'Linkin Park',pat:'numetal',bpm:105,tone:'dist',style:'triad',rec:['minor','harmonic','phrygian'],presets:{minor:[['i–♭VI–♭III–♭VII',[0,5,2,6]],['i–♭VI–♭VII',[0,5,6,6]]],harmonic:[['i–♭VI–V',[0,5,4,4]]]},phrases:[PH.lp_clean,PH.lp_wall,PH.nu_chug],desc:'Aメロはラップに静かな単音のループ、サビで一気に歪んだギターの壁。静と動の差で聞かせる、ニューメタルの代表的なスタイル。',point:'サビは細かく弾かず、コードを長く鳴らしきるほうが分厚く聞こえる。'},
     {id:'rhcp',name:'ファンクロックのカッティング',era:'参考:Red Hot Chili Peppers',ref:'Red Hot Chili Peppers',pat:'funk',bpm:96,tone:'crunch',style:'triad',rec:['dorian','mixolydian','minor'],presets:{dorian:[['i–IV',[0,3]]],mixolydian:[['I–♭VII–IV',[0,6,3]]],minor:[['i–♭VII–♭VI',[0,6,5]]]},phrases:[PH.funk_cut,PH.rh_dbl,PH.funk_single],desc:'ファンクのカッティングを、ロックの音量でやるスタイル。ベースとドラムと会話するような、すき間の多いギター。',point:'弾かない16分も手は振り続ける。音が出るのはほんの一部。'},
-    {id:'bump',name:'物語系ギターロック',era:'参考:BUMP OF CHICKEN',ref:'BUMP OF CHICKEN',pat:'rock',bpm:150,tone:'crunch',rev:0.2,style:'add9',rec:['major','minor'],presets:{major:[['I–V–vi–IV',[0,4,5,3]],['IV–V–vi',[3,4,5,5]],['vi–IV–I–V',[5,3,0,4]]]},phrases:[PH.drone,PH.bp_arp,PH.eighth],desc:'まっすぐな8ビートに、高い弦を鳴らしっぱなしにしたコード。言葉を届けるために、ギターは前に出すぎず景色を描く。',point:'高い2本を同じ場所で押さえたままコードを変えると、きらきらした広がりが出る。'}
+    {id:'bump',name:'物語系ギターロック',era:'参考:BUMP OF CHICKEN',ref:'BUMP OF CHICKEN',pat:'rock',bpm:150,tone:'crunch',rev:0.2,style:'add9',rec:['major','minor'],presets:{major:[['I–V–vi–IV',[0,4,5,3]],['IV–V–vi',[3,4,5,5]],['vi–IV–I–V',[5,3,0,4]]]},phrases:[PH.drone,PH.bp_arp,PH.eighth],desc:'まっすぐな8ビートに、高い弦を鳴らしっぱなしにしたコード。言葉を届けるために、ギターは前に出すぎず景色を描く。',point:'高い2本を同じ場所で押さえたままコードを変えると、きらきらした広がりが出る。'},
+    {id:'glay',name:'疾走する王道J-ROCK',era:'参考:GLAY',ref:'GLAY',pat:'jrock',bpm:152,tone:'crunch',rev:0.18,style:'triad',rec:['major','minor'],presets:{major:[['王道進行 IV–V–iii–vi',[3,4,2,5]],['I–V–vi–IV',[0,4,5,3]],['IV–V–vi',[3,4,5,5]]],minor:[['疾走 ♭VI–♭VII–i',[5,6,0,0]]]},phrases:[PH.gl_arp,PH.jr_pm,PH.eighth],desc:'高い弦のアルペジオで始まって、8ビートで一気に駆け抜ける。2本のギターがアルペジオとコードを分担する、90年代J-ROCKの真ん中の音。',point:'Aメロは刻み(PM)で抑えて、サビで8分ダウンの壁。2本のギターの役割を分けるイメージで。'},
+    {id:'larc',name:'耽美できらめくロック',era:'参考:L\'Arc〜en〜Ciel',ref:'L\'Arc〜en〜Ciel',pat:'alt',bpm:138,tone:'crunch',rev:0.34,style:'add9',rec:['minor','lydian','melodic'],presets:{minor:[['i–♭VI–♭VII–i',[0,5,6,0]],['i–♭III–♭VII–♭VI',[0,2,6,5]]],lydian:[['浮遊 I–II',[0,1]]],melodic:[['i–IV',[0,3]]]},phrases:[PH.la_arp,PH.sg_arp,PH.eighth],desc:'揺れるようなきらきらしたギター、浮いた響きのコード、ドラマチックな展開。美しさと妖しさが同居する、90年代の日本のロック。',point:'9度(浮いた音)やリディアンの「#4」を混ぜると、一気に耽美な響きになる。'}
   ],
   country:[
     {id:'classiccountry',name:'クラシック・カントリー',era:'50-60年代',pat:'country',bpm:112,desc:'「ブン・チャッ」の素朴なカントリー。',point:'ベース音と和音を交互に。'},
