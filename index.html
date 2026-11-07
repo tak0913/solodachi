@@ -28,6 +28,12 @@ h1{font-size:21px;margin:4px 0 0}
 label.f{display:flex;flex-direction:column;font-size:11px;color:var(--muted);gap:4px;flex:1;min-width:130px}
 select{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px;font-size:15px;width:100%}
 select:disabled{opacity:.6}
+input.txt{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px;font-size:16px;width:100%}
+.song{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:8px}
+.song.cur{border-color:var(--acc)}
+.song b{font-size:14px}.song small{display:block;font-size:11px;color:var(--muted)}
+.song .chs{font-size:12px;margin:4px 0 6px;word-break:break-all}
+.song .row{gap:6px}.song .sm{padding:7px 4px;font-size:12px}
 input[type=range]{width:100%;accent-color:var(--chord)}
 .val{color:var(--text);font-weight:600}
 .genres{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:4px}
@@ -270,7 +276,7 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
 </head>
 <body>
 <header class="top">
-  <div class="brand">Solodachi <span>v0.22</span></div>
+  <div class="brand">Solodachi <span>v0.23</span></div>
   <div class="nowc" id="nowchord"></div>
   <button class="play" id="play">▶ 伴奏</button>
 </header>
@@ -280,6 +286,7 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
     <h2>今日は何する?</h2>
     <button class="sbtn" data-go="play"><b>すぐ弾く</b><small>伴奏に合わせて、光るところを弾く</small></button>
     <button class="sbtn" id="startrandom"><b>おまかせで1曲</b><small>ジャンルもキーも進行も自動で決めて、すぐ弾く</small></button>
+    <button class="sbtn" id="startsongs"><b>保存した曲</b><small id="startsongsn">作って保存した進行を開く</small></button>
     <button class="sbtn" data-go="make"><b>曲を作る</b><small>ジャンル・キー・コード進行を決める</small></button>
     <button class="sbtn" data-go="learn"><b>学ぶ</b><small>知識カード・耳でキーを探す</small></button>
     <button class="sbtn" data-go="grad"><b>卒業テスト</b><small>補助輪なしで弾けるか試す</small></button>
@@ -408,6 +415,18 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
       <label class="f">テンポ <span class="en">tempo / BPM</span> <span class="val" id="bpmv">100</span><input type="range" id="bpm" min="60" max="180" value="100"></label>
       <label class="f">伴奏の音量 <span class="en">backing volume</span><input type="range" id="vol" min="0" max="100" value="70"></label>
     </div>
+  </div>
+  <div class="panel" id="savepanel">
+    <div class="ttl"><span>⑤ 保存 <span class="en">save</span></span><span id="savecount" style="font-size:11px;color:var(--muted)"></span></div>
+    <label class="f">名前 <span class="en">title</span><input class="txt" id="songname" maxlength="40" placeholder="空のままなら自動で名前をつける"></label>
+    <button class="sm" id="savebtn" style="width:100%;margin-top:8px">今の曲を新しく保存する</button>
+    <div class="tip" id="savetip"></div>
+    <div id="songlist"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="sm" id="backup">バックアップをコピー</button>
+      <button class="sm" id="restore">バックアップから戻す</button>
+    </div>
+    <div class="note">保存するのは「ジャンル・気分・キー・コード進行・長さ・拍子・テンポ・フレーズ」。保存先はこの端末の中だけ。アプリを消したりブラウザのデータを消したりすると一緒に消えるから、大事な曲は「バックアップをコピー」してメモ帳などに貼っておこう。作りかけの曲は自動で覚えていて、次に開いたときはそこから始まる。</div>
   </div>
   <button class="go" data-go="play">この設定で弾く →</button>
 </section>
@@ -1944,6 +1963,108 @@ function renderPhrase(){
 $('phprev').addEventListener('click',()=>{const L=(G().phrases||[]).length;if(!L)return;S.phr=(S.phr+L-1)%L;renderPhrase();});
 $('phnext').addEventListener('click',()=>{const L=(G().phrases||[]).length;if(!L)return;S.phr=(S.phr+1)%L;renderPhrase();});
 
+
+/* ================= 保存 ================= */
+const SKEY='solodachi-songs-v1',LKEY='solodachi-last-v1';
+let SONGS=[];try{const a=JSON.parse(localStorage.getItem(SKEY)||'[]');if(Array.isArray(a))SONGS=a;}catch(e){}
+function saveSongs(){try{localStorage.setItem(SKEY,JSON.stringify(SONGS));return true;}catch(e){return false;}}
+function snap(){
+  return {genre:S.genre,sub:S.sub,key:S.key,mood:S.mood,bpm:S.bpm,bars:S.bars,meter:S.meter,phr:S.phr,
+    custom:JSON.parse(JSON.stringify(S.custom)),lens:[...S.lens],meters:[...S.meters],
+    names:S.custom.map((_,i)=>chordAt(i).name),gname:G().name,mname:moodName()};
+}
+function defaultName(){const d=new Date();return `${G().name}・${NOTES[S.key]} ${moodName()}(${d.getMonth()+1}/${d.getDate()})`;}
+function validSnap(o){
+  return o&&GENRES[o.genre]&&Array.isArray(o.custom)&&o.custom.length&&o.custom.length<=MAXC&&
+    o.custom.every(e=>typeof e==='number'?(e>=0&&e<16):(e&&typeof e==='object'&&typeof e.r==='number'&&QI[e.q]))&&
+    NOTES[o.key]!==undefined&&METERS[o.meter];
+}
+function applySnap(o){
+  if(!validSnap(o))return false;
+  if(S.test)cancelTest();
+  const was=S.playing;if(was)stop();
+  S.genre=o.genre;S.sub=(o.sub&&(SUBS[o.genre]||[]).some(x=>x.id===o.sub))?o.sub:null;
+  const g=G();
+  S.mood=g.moods.includes(o.mood)?o.mood:g.moods[0];
+  S.phr=o.phr||0;S.key=o.key;S.bpm=(o.bpm>=40&&o.bpm<=300)?o.bpm:g.bpm;S.bars=o.bars||g.bars;S.meter=o.meter;
+  S.custom=JSON.parse(JSON.stringify(o.custom));
+  const fill=a=>S.custom.map((_,i)=>a&&a[i]!=null?a[i]:null);
+  S.lens=fill(o.lens);S.meters=fill(o.meters).map(m=>m&&METERS[m]?m:null);
+  S.prog=0;S.idx=0;
+  $('key').value=S.key;$('bpm').value=S.bpm;$('bpmv').textContent=S.bpm;$('bars').value=String(S.bars);$('meter').value=S.meter;
+  buildMood();buildProg();applyGenreAudio();refresh();if(was)start();
+  return true;
+}
+function esc(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function renderSongs(){
+  $('savecount').textContent=SONGS.length?`${SONGS.length}曲`:'';
+  $('startsongsn').textContent=SONGS.length?`${SONGS.length}曲を保存中。開いて続きを作る`:'まだない。「曲を作る」の⑤で保存できるよ';
+  if(!SONGS.length){$('songlist').innerHTML='<div class="note">まだ保存した曲はないよ。気に入った進行ができたら、名前をつけて保存しよう。</div>';return;}
+  $('songlist').innerHTML=SONGS.map((x,i)=>{
+    const o=x.data,d=new Date(x.at);
+    return `<div class="song ${x.id===S.songId?'cur':''}"><b>${esc(x.name)}</b>
+      <small>${esc(o.gname||'')}・${NOTES[o.key]||''} ${esc(o.mname||'')}・${o.meter}・${o.bpm}BPM・${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</small>
+      <div class="chs">${esc((o.names||[]).join(' → '))}</div>
+      <div class="row"><button class="sm" data-a="open" data-i="${i}">開く</button><button class="sm" data-a="over" data-i="${i}">今の曲で上書き</button><button class="sm" data-a="ren" data-i="${i}">名前</button><button class="sm" data-a="del" data-i="${i}">消す</button></div></div>`;
+  }).join('');
+  $('songlist').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>songAction(b.dataset.a,+b.dataset.i)));
+}
+function songAction(a,i){
+  const x=SONGS[i];if(!x)return;
+  if(a==='open'){
+    if(applySnap(x.data)){S.songId=x.id;$('songname').value=x.name;$('savetip').textContent=`「${x.name}」を開いたよ。変えたら「今の曲で上書き」で保存しなおせる。`;$('tip').textContent='';}
+    else $('savetip').textContent='この曲は今のアプリでは開けなかった(ジャンルがなくなった可能性)。';
+  }else if(a==='over'){
+    if(!S.custom.length){$('savetip').textContent='コードが1つもないから上書きできないよ。';return;}
+    if(!confirm(`「${x.name}」を今の曲で上書きする?(元には戻せない)`))return;
+    x.data=snap();x.at=Date.now();S.songId=x.id;
+    $('savetip').textContent=saveSongs()?`「${x.name}」を上書きしたよ。`:'保存できなかった(端末の空きやブラウザの設定を確認してね)。';
+  }else if(a==='ren'){
+    const n=prompt('新しい名前',x.name);if(n==null)return;const t=n.trim().slice(0,40);if(!t)return;
+    x.name=t;saveSongs();if(x.id===S.songId)$('songname').value=t;
+  }else if(a==='del'){
+    if(!confirm(`「${x.name}」を消す?(元には戻せない)`))return;
+    SONGS.splice(i,1);if(x.id===S.songId){S.songId=null;$('songname').value='';}saveSongs();$('savetip').textContent=`「${x.name}」を消したよ。`;
+  }
+  renderSongs();
+}
+$('savebtn').addEventListener('click',()=>{
+  if(!S.custom.length){$('savetip').textContent='コードを1つ以上入れてから保存してね。';return;}
+  const name=($('songname').value.trim()||defaultName()).slice(0,40);
+  const x={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,at:Date.now(),data:snap()};
+  SONGS.unshift(x);S.songId=x.id;
+  if(saveSongs()){$('songname').value=name;$('savetip').textContent=`「${name}」を保存したよ。`;
+    try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}}
+  else{SONGS.shift();S.songId=null;$('savetip').textContent='保存できなかった(端末の空きやブラウザの設定を確認してね)。';}
+  renderSongs();
+});
+$('backup').addEventListener('click',async()=>{
+  if(!SONGS.length){$('savetip').textContent='まだ保存した曲がないよ。';return;}
+  const txt='SOLODACHI1:'+JSON.stringify(SONGS);
+  try{await navigator.clipboard.writeText(txt);$('savetip').textContent=`${SONGS.length}曲ぶんをコピーしたよ。メモ帳などに貼って取っておこう。`;}
+  catch(e){prompt('この文字を全部コピーして取っておいてね',txt);}
+});
+$('restore').addEventListener('click',()=>{
+  const t=prompt('コピーしておいたバックアップの文字を貼りつけてね');if(!t)return;
+  let arr;try{arr=JSON.parse(t.trim().replace(/^SOLODACHI1:/,''));}catch(e){$('savetip').textContent='読めなかった。コピーした文字が全部そろってるか確認してね。';return;}
+  if(!Array.isArray(arr)){$('savetip').textContent='読めなかった(形がちがう)。';return;}
+  let add=0,skip=0;
+  arr.forEach(x=>{
+    if(!x||!x.id||typeof x.name!=='string'||!validSnap(x.data)){skip++;return;}
+    if(SONGS.some(y=>y.id===x.id))return;
+    SONGS.push({id:String(x.id),name:x.name.slice(0,40),at:+x.at||Date.now(),data:x.data});add++;
+  });
+  SONGS.sort((a,b)=>b.at-a.at);saveSongs();renderSongs();
+  $('savetip').textContent=`${add}曲を戻したよ。`+(skip?`(${skip}曲は今のアプリでは読めなかった)`:'');
+});
+$('startsongs').addEventListener('click',()=>{switchTab('make');setTimeout(()=>$('savepanel').scrollIntoView({behavior:'smooth'}),50);});
+// 作りかけを自動で覚える
+let lastJson='';
+function saveLast(){if(!S.custom.length||S.test)return;try{const j=JSON.stringify({...snap(),songId:S.songId||null});if(j!==lastJson){localStorage.setItem(LKEY,j);lastJson=j;}}catch(e){}}
+setInterval(saveLast,3000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)saveLast();});
+window.addEventListener('pagehide',saveLast);
+
 /* ================= 操作 ================= */
 $('pickmode').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
   if(b.dataset.m==='artist'){if(S.genre!=='artist')setGenre('artist',SUBS.artist[0].id);}
@@ -2001,6 +2122,11 @@ pk.addEventListener('pointerdown',e=>{e.preventDefault();if(S.test){$('fbk').tex
 
 $('key').innerHTML=NOTES.map((n,i)=>`<option value="${i}">${n}(${JP[i]})</option>`).join('');
 buildGenres();buildFretboard();setGenre('pops');
+try{const L=JSON.parse(localStorage.getItem(LKEY)||'null');
+  if(L&&applySnap(L)){S.songId=(L.songId&&SONGS.some(x=>x.id===L.songId))?L.songId:null;
+    const cur=SONGS.find(x=>x.id===S.songId);if(cur)$('songname').value=cur.name;
+    $('tip').textContent='前回の続きを読み込んだよ。';}}catch(e){}
+renderSongs();
 </script>
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
