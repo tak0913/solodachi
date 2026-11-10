@@ -250,6 +250,14 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
 .sb small{display:block;font-size:10px;font-weight:400;color:var(--muted)}
 .sb.on{background:var(--acc);color:var(--accText);border-color:var(--acc)}
 .sb.on small{color:#5b3a0c}
+.secs{display:flex;flex-wrap:wrap;gap:6px}
+.sc{padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:12px;font-weight:700;cursor:pointer}
+.sc.on{background:var(--acc);color:var(--accText);border-color:var(--acc)}
+.sc.add{border-style:dashed;color:var(--muted)}
+.sc small{font-weight:400;opacity:.75;margin-left:4px}
+.secbar{display:flex;gap:6px;overflow-x:auto;margin:0 0 8px;align-items:center;padding-bottom:2px}
+.secbar .sc{flex:0 0 auto}
+.secbar .sc.thru{border-color:var(--acc);color:var(--acc)}
 .seg{display:flex;gap:6px;margin-bottom:10px}
 .seg button{flex:1;padding:9px 6px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:13px;font-weight:700;cursor:pointer}
 .seg button.on{background:var(--acc);color:var(--accText);border-color:var(--acc)}
@@ -276,7 +284,7 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
 </head>
 <body>
 <header class="top">
-  <div class="brand">Solodachi <span>v0.23</span></div>
+  <div class="brand">Solodachi <span>v0.24</span></div>
   <div class="nowc" id="nowchord"></div>
   <button class="play" id="play">▶ 伴奏</button>
 </header>
@@ -298,6 +306,7 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
 <!-- ========== 弾く ========== -->
 <section class="tab" id="tab-play">
   <button class="summary" id="summary"></button>
+  <div class="secbar" id="secbar"></div>
   <div class="prog" id="chips"></div>
   <div class="fbk" id="testmsg" style="display:none"></div>
   <div class="board">
@@ -416,8 +425,27 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
       <label class="f">伴奏の音量 <span class="en">backing volume</span><input type="range" id="vol" min="0" max="100" value="70"></label>
     </div>
   </div>
+  <div class="panel" id="formpanel">
+    <div class="ttl"><span>⑤ 曲の形 <span class="en">song form</span></span><span id="formlen" style="font-size:11px"></span></div>
+    <div class="note" style="margin:0 0 8px">曲は「セクション(section)」という部品をつないでできてる。イントロ=出だし、Aメロ=静かに語るところ、サビ=一番盛り上がるところ。セクションごとにコード進行とフレーズを変えて並べると、ループが「1曲」になる。</div>
+    <div class="ttl"><span>セクション(タップで切り替え → ③でコード、「弾く」でフレーズを決める)</span></div>
+    <div class="secs" id="seclist"></div>
+    <div class="ttl" style="margin-top:10px"><span>新しいセクションを足す(別のお手本進行で始まる)</span></div>
+    <div class="secs" id="secadd"></div>
+    <div class="row" style="margin-top:8px">
+      <button class="sm" id="seccopy">今のをコピーして足す</button>
+      <button class="sm" id="secren">名前</button>
+      <button class="sm" id="secdel">消す</button>
+    </div>
+    <div class="ttl" style="margin-top:12px"><span>並び順(タップで外す)</span></div>
+    <div class="secs" id="orderlist"></div>
+    <div class="ttl" style="margin-top:8px"><span>並びの最後に足す</span></div>
+    <div class="secs" id="orderadd"></div>
+    <button class="play big" id="songplay">▶ 曲を通して再生</button>
+    <div class="tip" id="formtip"></div>
+  </div>
   <div class="panel" id="savepanel">
-    <div class="ttl"><span>⑤ 保存 <span class="en">save</span></span><span id="savecount" style="font-size:11px;color:var(--muted)"></span></div>
+    <div class="ttl"><span>⑥ 保存 <span class="en">save</span></span><span id="savecount" style="font-size:11px;color:var(--muted)"></span></div>
     <label class="f">名前 <span class="en">title</span><input class="txt" id="songname" maxlength="40" placeholder="空のままなら自動で名前をつける"></label>
     <button class="sm" id="savebtn" style="width:100%;margin-top:8px">今の曲を新しく保存する</button>
     <div class="tip" id="savetip"></div>
@@ -426,7 +454,7 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
       <button class="sm" id="backup">バックアップをコピー</button>
       <button class="sm" id="restore">バックアップから戻す</button>
     </div>
-    <div class="note">保存するのは「ジャンル・気分・キー・コード進行・長さ・拍子・テンポ・フレーズ」。保存先はこの端末の中だけ。アプリを消したりブラウザのデータを消したりすると一緒に消えるから、大事な曲は「バックアップをコピー」してメモ帳などに貼っておこう。作りかけの曲は自動で覚えていて、次に開いたときはそこから始まる。</div>
+    <div class="note">保存するのは「ジャンル・気分・キー・テンポ・拍子」と、セクションごとの「コード進行・長さ・フレーズ」、それに並び順。保存先はこの端末の中だけ。アプリを消したりブラウザのデータを消したりすると一緒に消えるから、大事な曲は「バックアップをコピー」してメモ帳などに貼っておこう。作りかけの曲は自動で覚えていて、次に開いたときはそこから始まる。</div>
   </div>
   <button class="go" data-go="play">この設定で弾く →</button>
 </section>
@@ -1027,7 +1055,8 @@ const LVDESC={1:'全部見せる:コードの音+スケールの音+音名',2:'�
 const MAXC=16;
 
 const S={genre:'pops',sub:null,key:0,mood:'major',prog:0,bpm:100,bars:2,level:1,playing:false,idx:0,peek:false,
-  phr:0,pick:'genre',stats:{g:0,o:0,x:0},custom:[0,4,5,3],lens:[null,null,null,null],meter:'4/4',meters:[null,null,null,null],mute:{drums:false,bass:false,gtr:false}};
+  phr:0,pick:'genre',stats:{g:0,o:0,x:0},custom:[0,4,5,3],lens:[null,null,null,null],meter:'4/4',meters:[null,null,null,null],mute:{drums:false,bass:false,gtr:false},
+  secs:[{name:'Aメロ'}],sec:0,order:[0],song:null};
 const $=id=>document.getElementById(id);
 function curSub(){return S.sub?(SUBS[S.genre]||[]).find(x=>x.id===S.sub):null;}
 function G(){const b=GENRES[S.genre],x=curSub();if(!x)return b;
@@ -1190,12 +1219,13 @@ function renderChips(){
     if(S.playing)return;S.idx=+el.dataset.i;refresh();
   }));
   if(p.length){const c=chordAt(S.idx),n=chordAt((S.idx+1)%p.length);$('nowchord').innerHTML=`今 <b>${c.name}</b>${p.length>1?' → 次 '+n.name:''}`;}else $('nowchord').textContent='';
-  renderLenRow();
+  renderLenRow();renderFormLen();
   const box=$('chips'),now=box.querySelector('.now');
   if(now)box.scrollLeft=Math.max(0,now.offsetLeft-box.offsetLeft-box.clientWidth/2+now.clientWidth/2);
 }
 function renderSummary(){
   $('summary').innerHTML=`<b>${G().name}</b>・キー ${NOTES[S.key]} ${moodName()}・${S.meter}・${S.bpm}BPM  <small>変更する ›</small>`;
+  renderFormLen();
 }
 function switchTab(t){
   document.querySelectorAll('.tab').forEach(x=>x.hidden=x.id!=='tab-'+t);
@@ -1260,7 +1290,7 @@ function renderStats(){
 }
 function refresh(){
   renderSummary();renderSubs();renderPick();
-  renderGenreButtons();renderTracks();renderLevel();renderBuilder();renderTasks();renderKeyFinder();
+  renderGenreButtons();renderTracks();renderLevel();renderBuilder();renderTasks();renderKeyFinder();renderForm();
   if(!S.custom.length)return;
   if(S.idx>=S.custom.length)S.idx=0;
   renderChips();renderBoard();renderWhy();renderStats();renderPhrase();
@@ -1835,18 +1865,21 @@ function scheduleStep(s,t0){
   if(ph)playPhrase(c,ph);
 }
 function scheduler(){
-  while(nextTime<ctx.currentTime+0.12){scheduleStep(step,nextTime);nextTime+=60/S.bpm/4;step++;}
+  while(nextTime<ctx.currentTime+0.12){
+    if(S.song&&step>=totalSteps()&&!songNext(nextTime))return;
+    scheduleStep(step,nextTime);nextTime+=60/S.bpm/4;step++;
+  }
 }
 function start(){
   initAudio();S.playing=true;lastStrum=null;
   if(isOriginal()&&!P.original){P.original=true;saveP();renderTasks();}
   step=startStepOf(S.idx);nextTime=ctx.currentTime+0.1;timer=setInterval(scheduler,25);
-  $('play').textContent='■ 停止';$('play').classList.add('on');
+  $('play').textContent='■ 停止';$('play').classList.add('on');renderForm();
 }
 function stop(){
-  S.playing=false;clearInterval(timer);
+  S.playing=false;clearInterval(timer);S.song=null;
   if(ctx)chokeStrum(ctx.currentTime+0.01,0.05);
-  $('play').textContent='▶ 伴奏';$('play').classList.remove('on');
+  $('play').textContent='▶ 伴奏';$('play').classList.remove('on');renderForm();
 }
 
 /* ================= フレーズの再生とTAB譜 ================= */
@@ -1964,19 +1997,145 @@ $('phprev').addEventListener('click',()=>{const L=(G().phrases||[]).length;if(!L
 $('phnext').addEventListener('click',()=>{const L=(G().phrases||[]).length;if(!L)return;S.phr=(S.phr+1)%L;renderPhrase();});
 
 
+/* ================= 曲の形(セクションと並び順) ================= */
+const MAXSEC=8,MAXORD=32,SEC_NAMES=['イントロ','Aメロ','Bメロ','サビ','間奏','アウトロ'];
+const clone=x=>JSON.parse(JSON.stringify(x));
+// 今いじっているセクションの中身は S.custom などに出してある。切り替えるときにしまう/出す
+function stash(){Object.assign(S.secs[S.sec],{custom:clone(S.custom),lens:[...S.lens],meters:[...S.meters],phr:S.phr,bars:S.bars});}
+function unstash(i){const x=S.secs[i];S.sec=i;S.custom=clone(x.custom);S.lens=[...x.lens];S.meters=[...x.meters];S.phr=x.phr||0;S.bars=x.bars;S.idx=0;$('bars').value=String(S.bars);}
+function secSteps(i){const x=i===S.sec?S:S.secs[i];let t=0;(x.custom||[]).forEach((_,j)=>{const l=x.lens[j];t+=Math.max(1,Math.round(METERS[x.meters[j]||S.meter].steps*(l==null?x.bars:l)));});return t;}
+function songSteps(){return S.order.reduce((t,i)=>t+secSteps(i),0);}
+function fmtLen(st){const sec=Math.round(st*60/S.bpm/4);return sec>=60?`${Math.floor(sec/60)}分${sec%60}秒`:`${sec}秒`;}
+function renderFormLen(){const el=$('formlen');if(el)el.textContent=`通しで約${fmtLen(songSteps())}`;}
+function formTip(t){$('formtip').textContent=t;}
+function renderForm(){
+  const sg=S.song,many=S.secs.length>1;
+  $('seclist').innerHTML=S.secs.map((x,i)=>`<button class="sc ${i===S.sec?'on':''}" data-i="${i}">${esc(x.name)}<small>${fmtLen(secSteps(i))}</small></button>`).join('');
+  $('secadd').innerHTML=SEC_NAMES.map(n=>`<button class="sc add" data-n="${n}">+ ${n}</button>`).join('');
+  $('orderlist').innerHTML=S.order.map((i,p)=>`<button class="sc ${sg&&sg.pos===p?'on':''}" data-p="${p}">${p+1}. ${esc(S.secs[i].name)}</button>`).join('');
+  $('orderadd').innerHTML=S.secs.map((x,i)=>`<button class="sc add" data-i="${i}">+ ${esc(x.name)}</button>`).join('');
+  $('songplay').textContent=sg?'■ 通し再生を止める':'▶ 曲を通して再生';$('songplay').classList.toggle('on',!!sg);
+  renderFormLen();
+  // 「弾く」タブの上の帯
+  let h;
+  if(sg)h=S.order.map((i,p)=>`<span class="sc ${sg.pos===p?'on':''}">${p+1}. ${esc(S.secs[i].name)}</span>`).join('')+`<button class="sc thru" data-a="stop">■ 止める</button>`;
+  else if(many)h=S.secs.map((x,i)=>`<button class="sc ${i===S.sec?'on':''}" data-i="${i}">${esc(x.name)}</button>`).join('')+`<button class="sc thru" data-a="thru">▶ 通しで再生</button>`;
+  else h=`<button class="sc on" data-i="0">${esc(S.secs[0].name)}</button><button class="sc add" data-a="form">+ セクションを足して曲にする</button>`;
+  $('secbar').innerHTML=h;
+  $('seclist').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>goSec(+b.dataset.i)));
+  $('secadd').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>addSec(b.dataset.n,false)));
+  $('orderlist').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>orderDel(+b.dataset.p)));
+  $('orderadd').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>orderAdd(+b.dataset.i)));
+  $('secbar').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    const a=b.dataset.a;
+    if(a==='stop')stop();else if(a==='thru')playSong();
+    else if(a==='form'){switchTab('make');setTimeout(()=>$('formpanel').scrollIntoView({behavior:'smooth'}),50);}
+    else goSec(+b.dataset.i);
+  }));
+}
+function goSec(i){
+  if(S.song){formTip('通し再生中は切り替えられないよ。いったん止めてね。');return;}
+  if(i===S.sec||!S.secs[i])return;
+  if(S.test)cancelTest();
+  const was=S.playing;if(was)stop();
+  stash();unstash(i);$('tip').textContent='';
+  if(!S.custom.length){$('chips').innerHTML='';$('chips2').innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px">このセクションはまだ空っぽ。上のボタンからコードを足そう。</div>';$('lenrow').innerHTML='';$('nowchord').textContent='';}
+formTip(`「${S.secs[i].name}」に切り替えたよ。③のコードと、「弾く」のフレーズはこのセクションのもの。`);
+  refresh();if(was&&S.custom.length)start();
+}
+function uniqName(n){let k=n,c=2;while(S.secs.some(x=>x.name===k))k=n+(c++);return k;}
+function addSec(name,copy){
+  if(S.secs.length>=MAXSEC){formTip(`セクションは${MAXSEC}個までだよ。`);return;}
+  if(S.test)cancelTest();
+  if(S.playing)stop();
+  stash();
+  const n=S.secs.length,nm=uniqName(name);
+  let x;
+  if(copy)x={...clone(S.secs[S.sec]),name:nm};
+  else{const pl=presetsFor(),used=S.secs.map(y=>(y.custom||[]).join()),fresh=pl.find(([,q])=>!used.includes(q.join())),L=(G().phrases||[]).length;
+    let d=fresh?[...fresh[1]]:null;for(let k=0;!d&&k<8;k++){const r=genProgression().d;if(k===7||!used.includes(r.join()))d=[...r];}
+    x={name:nm,custom:d,lens:d.map(()=>null),meters:d.map(()=>null),phr:L?n%L:0,bars:S.bars};}
+  S.secs.push(x);
+  if(S.order.length<MAXORD)S.order.push(n);
+  unstash(n);
+  formTip(copy?`「${nm}」をコピーで足したよ。③でコードを変えて、違いを作ろう。`:`「${nm}」を足したよ。ほかのセクションと違う進行を入れてある。③で自分の進行に変えてみて。`);
+  refresh();
+}
+function delSec(){
+  if(S.secs.length<=1){formTip('セクションは最低1つ必要だよ。');return;}
+  const i=S.sec,nm=S.secs[i].name;
+  if(!confirm(`セクション「${nm}」を消す?(元には戻せない)`))return;
+  if(S.test)cancelTest();
+  if(S.playing)stop();
+  S.secs.splice(i,1);
+  S.order=S.order.filter(x=>x!==i).map(x=>x>i?x-1:x);
+  if(!S.order.length)S.order=[0];
+  unstash(Math.min(i,S.secs.length-1));
+  formTip(`「${nm}」を消したよ。`);refresh();
+}
+function renSec(){
+  const x=S.secs[S.sec],n=prompt('セクションの名前',x.name);if(n==null)return;
+  const t=n.trim().slice(0,12);if(!t)return;x.name=t;renderForm();
+}
+function orderAdd(i){
+  if(S.song){formTip('通し再生中は並びを変えられないよ。');return;}
+  if(S.order.length>=MAXORD){formTip(`並びは${MAXORD}個までだよ。`);return;}
+  S.order.push(i);formTip('');renderForm();
+}
+function orderDel(p){
+  if(S.song){formTip('通し再生中は並びを変えられないよ。');return;}
+  if(S.order.length<=1){formTip('並びは最低1つ必要だよ。');return;}
+  S.order.splice(p,1);formTip('');renderForm();
+}
+// 通し再生:並び順のとおりに最後まで流して、最後は「ジャーン」で終わる
+function playSong(){
+  if(S.test)cancelTest();
+  if(S.playing)stop();
+  stash();
+  const p=S.order.findIndex(i=>S.secs[i].custom.length);
+  if(p<0){formTip('コードが入っているセクションがないよ。③でコードを足してね。');return;}
+  unstash(S.order[p]);S.song={pos:p};
+  formTip('');refresh();start();switchTab('play');
+}
+function songNext(t){
+  const sg=S.song;stash();
+  let p=sg.pos+1;while(p<S.order.length&&!S.secs[S.order[p]].custom.length)p++;
+  const wait=Math.max(0,(t-ctx.currentTime)*1000);
+  if(p>=S.order.length){
+    clearInterval(timer);sg.ending=true;
+    const home=chordFromPal(0);
+    try{kick(t,1);crash(t,0.6);strum(t,voicing(home),{vel:0.6,spread:0.03,dur:2.6});synthBass(t,36+home.root,2.4,0.4,'pops');}catch(e){}
+    setTimeout(()=>{if(S.song!==sg)return;stop();
+      $('fbk').textContent='最後まで通ったよ。これがキミの1曲の形。気になるところは「作る」の⑤で直そう。';
+      formTip('最後まで通ったよ。気に入ったら⑥で保存しよう。');},wait+2400);
+    return false;
+  }
+  sg.pos=p;unstash(S.order[p]);step=0;
+  setTimeout(()=>{if(S.song===sg)refresh();},wait);
+  return true;
+}
+$('seccopy').addEventListener('click',()=>addSec(S.secs[S.sec].name,true));
+$('secren').addEventListener('click',renSec);
+$('secdel').addEventListener('click',delSec);
+$('songplay').addEventListener('click',()=>{if(S.song)stop();else playSong();});
+
+
 /* ================= 保存 ================= */
 const SKEY='solodachi-songs-v1',LKEY='solodachi-last-v1';
 let SONGS=[];try{const a=JSON.parse(localStorage.getItem(SKEY)||'[]');if(Array.isArray(a))SONGS=a;}catch(e){}
 function saveSongs(){try{localStorage.setItem(SKEY,JSON.stringify(SONGS));return true;}catch(e){return false;}}
 function snap(){
-  return {genre:S.genre,sub:S.sub,key:S.key,mood:S.mood,bpm:S.bpm,bars:S.bars,meter:S.meter,phr:S.phr,
+  stash();
+  return {secs:clone(S.secs),order:[...S.order],sec:S.sec,form:S.order.map(i=>S.secs[i].name),genre:S.genre,sub:S.sub,key:S.key,mood:S.mood,bpm:S.bpm,bars:S.bars,meter:S.meter,phr:S.phr,
     custom:JSON.parse(JSON.stringify(S.custom)),lens:[...S.lens],meters:[...S.meters],
     names:S.custom.map((_,i)=>chordAt(i).name),gname:G().name,mname:moodName()};
 }
 function defaultName(){const d=new Date();return `${G().name}・${NOTES[S.key]} ${moodName()}(${d.getMonth()+1}/${d.getDate()})`;}
 function validSnap(o){
+  const okC=e=>typeof e==='number'?(e>=0&&e<16):(e&&typeof e==='object'&&typeof e.r==='number'&&QI[e.q]);
   return o&&GENRES[o.genre]&&Array.isArray(o.custom)&&o.custom.length&&o.custom.length<=MAXC&&
-    o.custom.every(e=>typeof e==='number'?(e>=0&&e<16):(e&&typeof e==='object'&&typeof e.r==='number'&&QI[e.q]))&&
+    o.custom.every(okC)&&
+    (o.secs===undefined||(Array.isArray(o.secs)&&o.secs.length>=1&&o.secs.length<=MAXSEC&&o.secs.every(x=>x&&Array.isArray(x.custom)&&x.custom.length<=MAXC&&x.custom.every(okC))))&&
     NOTES[o.key]!==undefined&&METERS[o.meter];
 }
 function applySnap(o){
@@ -1986,25 +2145,33 @@ function applySnap(o){
   S.genre=o.genre;S.sub=(o.sub&&(SUBS[o.genre]||[]).some(x=>x.id===o.sub))?o.sub:null;
   const g=G();
   S.mood=g.moods.includes(o.mood)?o.mood:g.moods[0];
-  S.phr=o.phr||0;S.key=o.key;S.bpm=(o.bpm>=40&&o.bpm<=300)?o.bpm:g.bpm;S.bars=o.bars||g.bars;S.meter=o.meter;
-  S.custom=JSON.parse(JSON.stringify(o.custom));
-  const fill=a=>S.custom.map((_,i)=>a&&a[i]!=null?a[i]:null);
-  S.lens=fill(o.lens);S.meters=fill(o.meters).map(m=>m&&METERS[m]?m:null);
+  S.key=o.key;S.bpm=(o.bpm>=40&&o.bpm<=300)?o.bpm:g.bpm;S.meter=o.meter;
+  // セクション(昔の保存データは進行1つだけなので、それを「Aメロ」1つとして開く)
+  const mk=(x,nm)=>{const c=clone(x.custom),f=a=>c.map((_,i)=>a&&a[i]!=null?a[i]:null);
+    return {name:String(x.name||nm).slice(0,12),custom:c,lens:f(x.lens),meters:f(x.meters).map(m=>m&&METERS[m]?m:null),phr:x.phr||0,bars:[0.25,0.5,1,2,4].includes(x.bars)?x.bars:g.bars};};
+  if(Array.isArray(o.secs)&&o.secs.length){
+    S.secs=o.secs.map((x,i)=>mk(x,'セクション'+(i+1)));
+    S.sec=(Number.isInteger(o.sec)&&o.sec>=0&&o.sec<S.secs.length)?o.sec:0;
+    S.secs[S.sec]=mk({...o,name:S.secs[S.sec].name});
+  }else{S.secs=[mk({...o,name:'Aメロ'})];S.sec=0;}
+  S.order=Array.isArray(o.order)?o.order.filter(i=>Number.isInteger(i)&&i>=0&&i<S.secs.length).slice(0,MAXORD):[];
+  if(!S.order.length)S.order=S.secs.map((_,i)=>i);
+  unstash(S.sec);
   S.prog=0;S.idx=0;
-  $('key').value=S.key;$('bpm').value=S.bpm;$('bpmv').textContent=S.bpm;$('bars').value=String(S.bars);$('meter').value=S.meter;
+  $('key').value=S.key;$('bpm').value=S.bpm;$('bpmv').textContent=S.bpm;$('meter').value=S.meter;
   buildMood();buildProg();applyGenreAudio();refresh();if(was)start();
   return true;
 }
 function esc(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function renderSongs(){
   $('savecount').textContent=SONGS.length?`${SONGS.length}曲`:'';
-  $('startsongsn').textContent=SONGS.length?`${SONGS.length}曲を保存中。開いて続きを作る`:'まだない。「曲を作る」の⑤で保存できるよ';
+  $('startsongsn').textContent=SONGS.length?`${SONGS.length}曲を保存中。開いて続きを作る`:'まだない。「曲を作る」の⑥で保存できるよ';
   if(!SONGS.length){$('songlist').innerHTML='<div class="note">まだ保存した曲はないよ。気に入った進行ができたら、名前をつけて保存しよう。</div>';return;}
   $('songlist').innerHTML=SONGS.map((x,i)=>{
     const o=x.data,d=new Date(x.at);
     return `<div class="song ${x.id===S.songId?'cur':''}"><b>${esc(x.name)}</b>
       <small>${esc(o.gname||'')}・${NOTES[o.key]||''} ${esc(o.mname||'')}・${o.meter}・${o.bpm}BPM・${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</small>
-      <div class="chs">${esc((o.names||[]).join(' → '))}</div>
+      <div class="chs">${o.secs&&o.secs.length>1?'曲の形:'+esc((o.form||[]).join(' → ')):esc((o.names||[]).join(' → '))}</div>
       <div class="row"><button class="sm" data-a="open" data-i="${i}">開く</button><button class="sm" data-a="over" data-i="${i}">今の曲で上書き</button><button class="sm" data-a="ren" data-i="${i}">名前</button><button class="sm" data-a="del" data-i="${i}">消す</button></div></div>`;
   }).join('');
   $('songlist').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>songAction(b.dataset.a,+b.dataset.i)));
