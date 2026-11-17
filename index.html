@@ -281,24 +281,84 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
 .tabhelp{margin-top:6px;font-size:12px}
 .tabhelp p{margin:4px 0}
 .cell.phit::after{content:'';position:absolute;inset:4px;border-radius:50%;box-shadow:0 0 0 3px #fff,0 0 14px 4px rgba(255,255,255,.7);z-index:2;pointer-events:none}
+
+/* ===== v0.30 1曲つくる(ウィザード)とメロディ ===== */
+.wiz{position:fixed;inset:0;z-index:60;overflow-y:auto;background:linear-gradient(180deg,#F5A02A 0,#7a3a12 70px,#1a120c 170px,#0b0907 340px);-webkit-overflow-scrolling:touch}
+.wzin{max-width:520px;margin:0 auto;padding:12px 16px 40px;min-height:100%;display:flex;flex-direction:column;gap:10px}
+.wzhead{display:flex;justify-content:space-between;align-items:center;color:#151515;font-weight:800}
+.wzhead button{background:transparent;border:0;color:#151515;font-size:14px;font-weight:700;cursor:pointer}
+.wzprog{display:flex;gap:4px}.wzprog i{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.25)}.wzprog i.d{background:#fff}
+.wzq{font-size:21px;font-weight:800;line-height:1.35;margin-top:6px}
+.wzh{font-size:12.5px;color:var(--muted);line-height:1.6}
+.wzc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px;cursor:pointer;color:var(--text);text-align:left;width:100%}
+.wzc.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+.wzc b{display:block;font-size:15px}.wzc small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}
+.wzgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.wzrow{display:flex;gap:8px;flex-wrap:wrap}
+.wzchip{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:7px 12px;font-size:13px;cursor:pointer}
+.wzchip.on{background:var(--acc);color:var(--accText);border-color:var(--acc);font-weight:700}
+.wzcard{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wzplay{width:36px;height:36px;border-radius:50%;background:var(--acc);color:#151515;display:grid;place-items:center;font-weight:900;flex:none}
+.wzfoot{margin-top:auto;display:flex;flex-direction:column;gap:8px;padding-top:8px}
+.wzbig{background:var(--acc);color:#151515;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;width:100%;cursor:pointer}
+.wzghost{background:transparent;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:11px;font-size:13px;width:100%;cursor:pointer}
+.wzall{max-height:46vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.wzall h4{margin:6px 0 0;font-size:12px;color:var(--muted)}
+.wzsec{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 11px}
+.wzsec b{min-width:84px}.wzsec small{color:var(--muted);font-size:11px;margin-left:auto}
+.wztip{font-size:12.5px;color:#ffd493;min-height:1em}
+.sbtn[hidden],#startmorebox[hidden]{display:none!important}
+.smore{display:block;width:100%;background:transparent;border:0;color:var(--muted);font-size:13px;padding:8px;cursor:pointer}
+.sbtn.wzb{border-color:#fff;border-width:2px;background:linear-gradient(90deg,rgba(245,160,42,.25),var(--panel))}
+.mgwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.mg{display:grid;gap:2px;font-size:10px}
+.mg .lab{position:sticky;left:0;z-index:2;background:var(--panel);color:var(--muted);display:flex;align-items:center;justify-content:flex-end;padding-right:3px;font-size:9.5px;min-width:36px;white-space:nowrap}
+.wiz .mg .lab{background:#14100c}
+.mg .ch{grid-row:1;font-size:11px;font-weight:700;text-align:center;background:#2e241b;border-radius:5px;padding:3px 0;white-space:nowrap;overflow:hidden}
+.mg .ce{height:24px;min-width:22px;border-radius:4px;background:#191410;border:1px solid #2a221b;position:relative;cursor:pointer}
+.mg .ce.ct{background:#3d2a14}
+.mg .ce.bt{border-left:2px solid #6b5640}
+.mg .ce.pl{box-shadow:inset 0 0 0 2px #fff6}
+.mg .ce .n{position:absolute;inset:3px;border-radius:50%;background:var(--scale)}
+.mg .ce .n.c{background:var(--chord)}
+.mg .ce .n.sel{outline:2px solid #fff;outline-offset:1px}
+.mg .ce .h{position:absolute;left:-3px;right:0;top:9px;height:6px;background:var(--scale);opacity:.7;border-radius:3px}
+.mg .ce .h.c{background:var(--chord)}
+.mtools{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.mtools button{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 4px;font-size:12.5px;cursor:pointer}
+.mtools button.on{background:var(--acc);color:var(--accText)}
+.mscore{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6}
+.mscore b{color:var(--text)}
+.mfb{position:relative;background:linear-gradient(180deg,#3b2a1c,#2a1d13);border-radius:10px;height:92px;margin-top:6px;overflow:hidden}
+.mfb .st{position:absolute;left:0;right:0;height:1px;background:#c9b49a66}
+.mfb .fr{position:absolute;top:0;bottom:0;width:1px;background:#00000066}
+.mfb .fn{position:absolute;bottom:1px;font-size:8px;color:#b39d7c;transform:translateX(-50%)}
+.mfb .dt{position:absolute;width:15px;height:15px;border-radius:50%;background:var(--chord);border:2px solid #fff;transform:translate(-50%,-50%)}
+.mfb .dt.sub{background:transparent;border-color:var(--chord);opacity:.8}
 </style>
 </head>
 <body>
 <header class="top">
-  <div class="brand">Solodachi <span>v0.25</span></div>
+  <div class="brand">Solodachi <span>v0.30</span></div>
   <div class="nowc" id="nowchord"></div>
   <button class="play" id="play">▶ 伴奏</button>
 </header>
 
+<div class="wiz" id="wiz" hidden></div>
 <div class="start" id="start">
   <div class="startin">
     <h2>今日は何する?</h2>
+    <button class="sbtn wzb" id="startwiz"><b>🎵 1曲つくる</b><small id="startwizn">雰囲気 → サビ → Aメロ の順に、メロディまで作る</small></button>
+    <button class="sbtn" id="startwizcont" hidden><b>続きをつくる</b><small id="startwizcontn"></small></button>
     <button class="sbtn" data-go="play"><b>すぐ弾く</b><small>伴奏に合わせて、光るところを弾く</small></button>
-    <button class="sbtn" id="startrandom"><b>おまかせで1曲</b><small>ジャンルもキーも進行も自動で決めて、すぐ弾く</small></button>
     <button class="sbtn" id="startsongs"><b>保存した曲</b><small id="startsongsn">作って保存した進行を開く</small></button>
-    <button class="sbtn" data-go="make"><b>曲を作る</b><small>ジャンル・キー・コード進行を決める</small></button>
+    <button class="smore" id="startmore">ほかのこと(くわしく作る・おまかせ・学ぶ・卒業テスト)▼</button>
+    <div id="startmorebox" hidden>
+    <button class="sbtn" data-go="make"><b>くわしく作る</b><small>ジャンル・キー・コード・リズム・曲の形を全部自分で決める</small></button>
+    <button class="sbtn" id="startrandom"><b>おまかせで1曲</b><small>ジャンルもキーも進行も自動で決めて、すぐ弾く</small></button>
     <button class="sbtn" data-go="learn"><b>学ぶ</b><small>知識カード・耳でキーを探す</small></button>
     <button class="sbtn" data-go="grad"><b>卒業テスト</b><small>補助輪なしで弾けるか試す</small></button>
+    </div>
   </div>
 </div>
 
@@ -354,6 +414,7 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
         <button class="trk" data-t="drums">ドラム<small>drums</small></button>
         <button class="trk" data-t="bass">ベース<small>bass</small></button>
         <button class="trk" data-t="gtr">ギター<small>guitar</small></button>
+        <button class="trk" data-t="mel">メロ<small>melody</small></button>
       </div>
     </div>
     <div class="note">1つずつ消すと、それぞれの役割が聞こえる。音が出ないときはマナーモードをオフに。</div>
@@ -398,6 +459,10 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
     <div class="ttl" style="margin-top:12px"><span>今の進行(タップで選んで、長さや拍子を変えられる)</span></div>
     <div class="prog" id="chips2"></div>
     <div id="lenrow"></div>
+  </div>
+  <div class="panel" id="melpanel">
+    <div class="ttl"><span>③+ メロディ <span class="en">melody</span>(今のセクション)</span></div>
+    <div id="melbox"></div>
   </div>
   <div class="panel">
     <div class="ttl"><span>④ リズム <span class="en">rhythm</span></span></div>
@@ -1062,7 +1127,7 @@ const LVDESC={1:'全部見せる:コードの音+スケールの音+音名',2:'�
 const MAXC=16;
 
 const S={genre:'pops',sub:null,key:0,mood:'major',prog:0,bpm:100,bars:2,level:1,playing:false,idx:0,peek:false,
-  phr:0,pick:'genre',stats:{g:0,o:0,x:0},custom:[0,4,5,3],lens:[null,null,null,null],meter:'4/4',meters:[null,null,null,null],mute:{drums:false,bass:false,gtr:false},
+  phr:0,pick:'genre',stats:{g:0,o:0,x:0},custom:[0,4,5,3],lens:[null,null,null,null],meter:'4/4',meters:[null,null,null,null],mute:{drums:false,bass:false,gtr:false,mel:false},mel:[],
   secs:[{name:'Aメロ'}],sec:0,order:[0],song:null,up:0,lv:1};
 const $=id=>document.getElementById(id);
 function curSub(){return S.sub?(SUBS[S.genre]||[]).find(x=>x.id===S.sub):null;}
@@ -1312,7 +1377,7 @@ function renderStats(){
 }
 function refresh(){
   renderSummary();renderSubs();renderPick();
-  renderGenreButtons();renderTracks();renderLevel();renderBuilder();renderTasks();renderKeyFinder();renderForm();
+  renderGenreButtons();renderTracks();renderLevel();renderBuilder();renderTasks();renderKeyFinder();renderForm();renderMel();
   if(!S.custom.length)return;
   if(S.idx>=S.custom.length)S.idx=0;
   renderChips();renderBoard();renderWhy();renderStats();renderPhrase();
@@ -1502,6 +1567,7 @@ function initAudio(){
   revSend=ctx.createGain();revSend.connect(conv);conv.connect(backing);
   ['drums','bass','gtr'].forEach(k=>{const e=ctx.createGain();e.connect(backing);ener[k]=e;const g=ctx.createGain();g.gain.value=S.mute[k]?0:1;g.connect(e);buses[k]=g;});
   setEnergy(ctx.currentTime);
+  {const mg=ctx.createGain();mg.gain.value=S.mute.mel?0:1;mg.connect(backing);mg.connect(revSend);buses.mel=mg;}
   buses.drums.connect(revSend);buses.gtr.connect(revSend);
   // v0.22:ギターだけにかかるディレイ(やまびこ)。付点8分(3/4拍)で、少しずつ小さく・こもりながらくり返す
   dlySend=ctx.createGain();dlySend.gain.value=0;dlyNode=ctx.createDelay(2);
@@ -1900,6 +1966,7 @@ function scheduleStep(s,t0){
     if(S.song)fill(s,t,sp);
   }finally{quietGtr=false;NRG=1;}
   if(ph)playPhrase(c,ph);
+  playMel(s,t,sp);
 }
 // v0.25:通し再生で、次のセクションが同じかそれ以上の強さなら、最後の1拍で「タカタカ」とフィルを入れる
 function nextSongSec(){const sg=S.song;if(!sg)return null;let p=sg.pos+1;while(p<S.order.length&&!S.secs[S.order[p]].custom.length)p++;return p<S.order.length?S.secs[S.order[p]]:null;}
@@ -1919,12 +1986,14 @@ function start(){
   initAudio();S.playing=true;lastStrum=null;
   if(isOriginal()&&!P.original){P.original=true;saveP();renderTasks();}
   step=startStepOf(S.idx);nextTime=ctx.currentTime+0.1;timer=setInterval(scheduler,25);
-  $('play').textContent='■ 停止';$('play').classList.add('on');renderForm();
+  $('play').textContent='■ 停止';$('play').classList.add('on');renderForm();if(!$('wiz').hidden&&W.step===5)renderWiz();else renderMel();
 }
 function stop(){
   S.playing=false;clearInterval(timer);S.song=null;
   if(ctx)chokeStrum(ctx.currentTime+0.01,0.05);
   $('play').textContent='▶ 伴奏';$('play').classList.remove('on');renderForm();
+  document.querySelectorAll('.mg .ce.pl').forEach(x=>x.classList.remove('pl'));
+  if(!$('wiz').hidden&&W.step===5)renderWiz();else renderMel();
 }
 
 /* ================= フレーズの再生とTAB譜 ================= */
@@ -2048,8 +2117,8 @@ const MAXSEC=8,MAXORD=32,SEC_NAMES=['イントロ','Aメロ','Bメロ','サビ',
 const SEC_LV={'サビ':2,'サビ後':2};
 const clone=x=>JSON.parse(JSON.stringify(x));
 // 今いじっているセクションの中身は S.custom などに出してある。切り替えるときにしまう/出す
-function stash(){Object.assign(S.secs[S.sec],{custom:clone(S.custom),lens:[...S.lens],meters:[...S.meters],phr:S.phr,bars:S.bars,up:S.up||0,lv:S.lv==null?1:S.lv});}
-function unstash(i){const x=S.secs[i];S.sec=i;S.custom=clone(x.custom);S.lens=[...x.lens];S.meters=[...x.meters];S.phr=x.phr||0;S.bars=x.bars;S.up=x.up||0;S.lv=x.lv==null?1:x.lv;S.idx=0;$('bars').value=String(S.bars);}
+function stash(){Object.assign(S.secs[S.sec],{custom:clone(S.custom),lens:[...S.lens],meters:[...S.meters],phr:S.phr,bars:S.bars,mel:clone(S.mel||[]),up:S.up||0,lv:S.lv==null?1:S.lv});}
+function unstash(i){const x=S.secs[i];S.sec=i;S.custom=clone(x.custom);S.lens=[...x.lens];S.meters=[...x.meters];S.phr=x.phr||0;S.bars=x.bars;S.up=x.up||0;S.lv=x.lv==null?1:x.lv;S.mel=clone(x.mel||[]);S.idx=0;$('bars').value=String(S.bars);}
 function secSteps(i){const x=i===S.sec?S:S.secs[i];let t=0;(x.custom||[]).forEach((_,j)=>{const l=x.lens[j];t+=Math.max(1,Math.round(METERS[x.meters[j]||S.meter].steps*(l==null?x.bars:l)));});return t;}
 function songSteps(){return S.order.reduce((t,i)=>t+secSteps(i),0);}
 function fmtLen(st){const sec=Math.round(st*60/S.bpm/4);return sec>=60?`${Math.floor(sec/60)}分${sec%60}秒`:`${sec}秒`;}
@@ -2118,7 +2187,7 @@ function addSec(name,copy){
   if(copy)x={...clone(S.secs[S.sec]),name:nm};
   else{const pl=presetsFor(),used=S.secs.map(y=>(y.custom||[]).join()),fresh=pl.find(([,q])=>!used.includes(q.join())),L=(G().phrases||[]).length;
     let d=fresh?[...fresh[1]]:null;for(let k=0;!d&&k<8;k++){const r=genProgression().d;if(k===7||!used.includes(r.join()))d=[...r];}
-    x={name:nm,custom:d,lens:d.map(()=>null),meters:d.map(()=>null),phr:L?n%L:0,bars:S.bars,up:0,lv:SEC_LV[name]==null?1:SEC_LV[name]};}
+    x={name:nm,custom:d,lens:d.map(()=>null),meters:d.map(()=>null),phr:L?n%L:0,bars:S.bars,up:0,lv:SEC_LV[name]==null?1:SEC_LV[name],mel:[]};}
   S.secs.push(x);
   if(S.order.length<MAXORD)S.order.push(n);
   unstash(n);
@@ -2190,7 +2259,7 @@ let SONGS=[];try{const a=JSON.parse(localStorage.getItem(SKEY)||'[]');if(Array.i
 function saveSongs(){try{localStorage.setItem(SKEY,JSON.stringify(SONGS));return true;}catch(e){return false;}}
 function snap(){
   stash();
-  return {secs:clone(S.secs),order:[...S.order],sec:S.sec,form:S.order.map(i=>S.secs[i].name),genre:S.genre,sub:S.sub,key:S.key,mood:S.mood,bpm:S.bpm,bars:S.bars,meter:S.meter,phr:S.phr,up:S.up||0,lv:S.lv==null?1:S.lv,
+  return {secs:clone(S.secs),order:[...S.order],sec:S.sec,form:S.order.map(i=>S.secs[i].name),genre:S.genre,sub:S.sub,key:S.key,mood:S.mood,bpm:S.bpm,bars:S.bars,meter:S.meter,phr:S.phr,up:S.up||0,lv:S.lv==null?1:S.lv,mel:clone(S.mel||[]),
     custom:JSON.parse(JSON.stringify(S.custom)),lens:[...S.lens],meters:[...S.meters],
     names:S.custom.map((_,i)=>chordAt(i).name),gname:G().name,mname:moodName()};
 }
@@ -2212,7 +2281,7 @@ function applySnap(o){
   S.key=o.key;S.bpm=(o.bpm>=40&&o.bpm<=300)?o.bpm:g.bpm;S.meter=o.meter;
   // セクション(昔の保存データは進行1つだけなので、それを「Aメロ」1つとして開く)
   const mk=(x,nm)=>{const c=clone(x.custom),f=a=>c.map((_,i)=>a&&a[i]!=null?a[i]:null);
-    return {name:String(x.name||nm).slice(0,12),custom:c,lens:f(x.lens),meters:f(x.meters).map(m=>m&&METERS[m]?m:null),phr:x.phr||0,bars:[0.25,0.5,1,2,4].includes(x.bars)?x.bars:g.bars,up:[0,1,2,3].includes(x.up)?x.up:0,lv:[0,1,2].includes(x.lv)?x.lv:1};};
+    return {name:String(x.name||nm).slice(0,12),custom:c,lens:f(x.lens),meters:f(x.meters).map(m=>m&&METERS[m]?m:null),phr:x.phr||0,bars:[0.25,0.5,1,2,4].includes(x.bars)?x.bars:g.bars,up:[0,1,2,3].includes(x.up)?x.up:0,lv:[0,1,2].includes(x.lv)?x.lv:1,mel:cleanMel(x.mel)};};
   if(Array.isArray(o.secs)&&o.secs.length){
     S.secs=o.secs.map((x,i)=>mk(x,'セクション'+(i+1)));
     S.sec=(Number.isInteger(o.sec)&&o.sec>=0&&o.sec<S.secs.length)?o.sec:0;
@@ -2229,7 +2298,7 @@ function applySnap(o){
 function esc(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function renderSongs(){
   $('savecount').textContent=SONGS.length?`${SONGS.length}曲`:'';
-  $('startsongsn').textContent=SONGS.length?`${SONGS.length}曲を保存中。開いて続きを作る`:'まだない。「曲を作る」の⑥で保存できるよ';
+  $('startsongsn').textContent=SONGS.length?`${SONGS.length}曲を保存中。開いて続きを作る`:'まだない。「1曲つくる」の最後で保存できるよ';
   if(!SONGS.length){$('songlist').innerHTML='<div class="note">まだ保存した曲はないよ。気に入った進行ができたら、名前をつけて保存しよう。</div>';return;}
   $('songlist').innerHTML=SONGS.map((x,i)=>{
     const o=x.data,d=new Date(x.at);
@@ -2296,6 +2365,284 @@ setInterval(saveLast,3000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)saveLast();});
 window.addEventListener('pagehide',saveLast);
 
+
+/* ================= v0.30 メロディ ================= */
+// メロディは「音の段(g)」で持つ。g=0 が主音、1つ上がるごとに今の気分の音階を1つ上がる(7で1オクターブ上)。
+// だからキーや気分を変えても、セクションのキーを上げても、メロディはそのままついてくる。
+// 1音 = {c: 何個目の8分か, d: 長さ(8分いくつ), g: 音の段}
+const MEL_LO=-2,MEL_HI=9,MELMAX=256;
+let melSel=-1,melUndo=[],melBox=null;
+function cleanMel(a){
+  if(!Array.isArray(a))return [];
+  return a.filter(n=>n&&Number.isInteger(n.c)&&n.c>=0&&n.c<512&&Number.isInteger(n.g)&&n.g>=MEL_LO&&n.g<=MEL_HI&&Number.isInteger(n.d)&&n.d>=1&&n.d<=16)
+    .slice(0,MELMAX).map(n=>({c:n.c,d:n.d,g:n.g})).sort((a,b)=>a.c-b.c);
+}
+function melScale(){const m=MOODS[S.mood];return (m&&m.chord)||[0,2,3,5,7,9,10];}
+function melMidi(g){const sc=melScale(),o=Math.floor(g/7),i=((g%7)+7)%7;return 55+((KEY()-7+12)%12)+12*o+sc[i];}
+function melPc(g){return ((melMidi(g)%12)+12)%12;}
+function melCols(){return Math.floor(totalSteps()/2);}
+function chordAtCol(c){return chordAt(locate(c*2).ci);}
+function melNoteName(g){return JP[melPc(g)];}
+function melIsChordTone(n){return chordAtCol(n.c).pcs.includes(melPc(n.g));}
+// --- 音を鳴らす(歌の代わりの、笛っぽいやわらかい音) ---
+function melVoice(t,m,dur){
+  const f=mtof(m),o=ctx.createOscillator(),o2=ctx.createOscillator(),g2=ctx.createGain(),lp=ctx.createBiquadFilter(),g=ctx.createGain(),lfo=ctx.createOscillator(),lg=ctx.createGain();
+  o.type='triangle';o2.type='sawtooth';o.frequency.value=f;o2.frequency.value=f;o2.detune.value=5;g2.gain.value=0.16;
+  lp.type='lowpass';lp.frequency.value=2400;
+  lfo.frequency.value=5.3;lg.gain.setValueAtTime(0,t);lg.gain.linearRampToValueAtTime(f*0.006,t+Math.min(0.4,dur));lfo.connect(lg);lg.connect(o.frequency);lg.connect(o2.frequency);
+  const end=Math.max(0.08,dur-0.03);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.24,t+0.025);g.gain.setValueAtTime(0.24,t+end);g.gain.exponentialRampToValueAtTime(0.0001,t+end+0.1);
+  o.connect(lp);o2.connect(g2);g2.connect(lp);lp.connect(g);g.connect(buses.mel);
+  [o,o2,lfo].forEach(x=>{x.start(t);x.stop(t+end+0.14);});
+}
+function playMel(s,t,sp){
+  if(!S.mel||!S.mel.length||!buses.mel)return;
+  const pos=s%totalSteps();if(pos%2)return;
+  const c=pos/2,n=S.mel.find(x=>x.c===c);
+  if(n)melVoice(t,melMidi(n.g),n.d*2*sp);
+  setTimeout(()=>{if(!S.playing)return;document.querySelectorAll('.mg .ce.pl').forEach(x=>x.classList.remove('pl'));
+    document.querySelectorAll(`.mg .ce[data-c="${c}"]`).forEach(x=>x.classList.add('pl'));},Math.max(0,(t-ctx.currentTime)*1000));
+}
+// --- おまかせ下書き ---
+// 作曲のよくある決まりごとで作る:①拍の頭はコードの音 ②となりへは1〜2段ずつ動く ③同じリズムをくり返す(覚えやすい)
+// ④サビは高め・Aメロは低め ⑤最後は主音(またはその近くのコードの音)で長くのばして終わる
+const RHY={
+  chorus:[[1,0,1,0,1,0,1,1],[1,1,0,1,1,0,1,0],[1,0,1,1,1,0,1,0],[0,1,1,1,1,0,1,0],[1,0,1,0,1,1,1,0]],
+  verse:[[1,0,1,1,0,0,1,0],[0,0,1,1,1,0,1,0],[1,0,0,1,1,0,0,0],[0,1,1,0,1,0,0,0],[0,0,1,0,1,1,1,0]]
+};
+function melRole(name){return /サビ/.test(name||'')?'chorus':'verse';}
+function mkDraft(role){
+  const n=melCols();if(!n)return [];
+  const R=RHY[role]||RHY.verse,pick=()=>R[Math.floor(Math.random()*R.length)];
+  const A=pick(),B=pick(),C=pick();
+  const lo=role==='chorus'?2:-1,hi=role==='chorus'?9:5,center=role==='chorus'?6:2;
+  const bars=Math.ceil(n/8),on=[];
+  for(let b=0;b<bars;b++){const r=b===bars-1&&bars>1?[1,0,1,0,1,0,0,0]:[A,B,A,C][b%4];for(let k=0;k<8&&b*8+k<n;k++)if(r[k])on.push(b*8+k);}
+  if(!on.length||on[0]!==0&&role==='chorus')on.unshift(0);
+  const out=[];let prev=center,rep=0;
+  // 2小節ごとに「山の形」を決める(上がる/山なり/下がる)。目標の高さに向かって動くので、同じ音ばかりにならない
+  const shapes=[p=>p,p=>Math.sin(p*Math.PI),p=>1-p,p=>Math.sin(p*Math.PI)*0.6+p*0.4];
+  const amp=role==='chorus'?3:2,phr=[];for(let k=0;k<Math.ceil(n/16);k++)phr.push(shapes[Math.floor(Math.random()*shapes.length)]);
+  const target=c=>center-amp/2+amp*phr[Math.floor(c/16)]((c%16)/15);
+  const near=(cands,tg,pv)=>{let best=null,bd=1e9;cands.forEach(g=>{const d=Math.abs(g-tg)+0.45*Math.abs(g-pv)+(g===pv?0.5+rep*0.9:0)+(Math.abs(g-pv)>4?2:0)+Math.random()*0.8;if(d<bd){bd=d;best=g;}});return best;};
+  const all=[];for(let g=lo;g<=hi;g++)all.push(g);
+  on.forEach((c,i)=>{
+    const pcs=chordAtCol(c).pcs,strong=c%2===0;
+    let g;
+    const bar=Math.floor(c/8),src=bars>=3&&bar%4===2?out.find(x=>x.c===c-16):null;
+    if(src){g=src.g;if(strong&&!pcs.includes(melPc(g)))g=near(all.filter(x=>pcs.includes(melPc(x))),g,prev);}
+    else if(strong){const ct=all.filter(x=>pcs.includes(melPc(x)));g=near(ct.length?ct:all,target(c),prev);}
+    else{const tg=target(c),dir=tg>prev+0.5?1:tg<prev-0.5?-1:(Math.random()<0.5?1:-1);g=prev+dir*(Math.random()<0.7?1:2);if(g<lo||g>hi)g=prev-dir;}
+    g=Math.max(lo,Math.min(hi,g));rep=g===prev?rep+1:0;
+    out.push({c,d:1,g});prev=g;
+  });
+  // 最後の音:主音がコードの音ならそこ、ダメなら近いコードの音
+  const last=out[out.length-1],pcs=chordAtCol(last.c).pcs,tons=[0,7].filter(g=>g>=lo-1&&g<=hi);
+  const tg=tons.find(g=>pcs.includes(melPc(g)));
+  if(tg!=null)last.g=near(tons.filter(g=>pcs.includes(melPc(g))),last.g,last.g);else{const ct=all.filter(g=>pcs.includes(melPc(g)));if(ct.length)last.g=near(ct,last.g,last.g);}
+  out.forEach((x,i)=>{const nx=i+1<out.length?out[i+1].c:n;x.d=Math.max(1,Math.min(i+1<out.length?4:8,nx-x.c));});
+  return out;
+}
+// --- 画面 ---
+function melPush(){melUndo.push(clone(S.mel||[]));if(melUndo.length>40)melUndo.shift();}
+function melTarget(){return !$('wiz').hidden?document.getElementById('wzmel'):$('melbox');}
+function renderMel(){
+  const box=melTarget();if(!box)return;melBox=box;
+  if(!S.custom.length){box.innerHTML='<div class="wzh">先にコードを入れてね。メロディはコードに合わせて作るよ。</div>';return;}
+  const n=melCols(),mel=(S.mel||[]).filter(x=>x.c<n);
+  if(melSel>=mel.length)melSel=-1;
+  const cols=`36px repeat(${n},minmax(22px,1fr))`;
+  let h=`<div class="mgwrap"><div class="mg" style="grid-template-columns:${cols}"><div class="lab" style="grid-row:1"></div>`;
+  // コード名の帯
+  for(let i=0;i<S.custom.length;i++){const st=Math.floor(startStepOf(i)/2),w=Math.max(1,Math.floor(chordSteps(i)/2));if(st>=n)break;
+    h+=`<div class="ch" style="grid-column:${st+2}/span ${Math.min(w,n-st)}">${chordAt(i).name}</div>`;}
+  const cover={};mel.forEach((x,i)=>{for(let k=1;k<x.d&&x.c+k<n;k++)cover[x.c+k]=i;});
+  for(let g=MEL_HI;g>=MEL_LO;g--){
+    const pc=melPc(g),row=MEL_HI-g+2;
+    h+=`<div class="lab" style="grid-row:${row}">${JP[pc]}${g===0||g===7?'●':''}</div>`;
+    for(let c=0;c<n;c++){
+      const ct=chordAtCol(c).pcs.includes(pc),i=mel.findIndex(x=>x.c===c&&x.g===g),hi=cover[c]!=null&&mel[cover[c]].g===g?cover[c]:-1;
+      let inner='';
+      if(i>=0)inner=`<span class="n ${melIsChordTone(mel[i])?'c':''} ${i===melSel?'sel':''}"></span>`;
+      else if(hi>=0)inner=`<span class="h ${melIsChordTone(mel[hi])?'c':''}"></span>`;
+      h+=`<div class="ce ${ct?'ct':''} ${c%2===0?'bt':''}" style="grid-row:${row}" data-c="${c}" data-g="${g}">${inner}</div>`;
+    }
+  }
+  h+='</div></div>';
+  // 道具
+  h+=`<div class="mtools"><button data-m="play" class="${S.playing&&!S.song?'on':''}">${S.playing&&!S.song?'■ 止める':'▶ 聴く'}</button><button data-m="draft">🎲 下書き</button><button data-m="undo">↶ 戻す</button>
+    <button data-m="short">← ちぢめる</button><button data-m="long">のばす →</button><button data-m="del">消す</button></div>`;
+  // 点数と、選んだ音のギターの場所
+  const strong=mel.filter(x=>x.c%2===0),good=strong.filter(melIsChordTone).length;
+  h+=`<div class="mscore">拍の頭の音:<b>${good}/${strong.length}</b> がコードの音(オレンジ)${strong.length&&good===strong.length?' ◎ 着地ばっちり':strong.length&&good/strong.length>=0.7?' ○ いい感じ':''}<br>`;
+  if(melSel>=0){const x=mel[melSel],m=melMidi(x.g);h+=`選んでる音:<b>${melNoteName(x.g)}(${NOTES[m%12]})</b> ${melIsChordTone(x)?'= '+chordAtCol(x.c).name+' のコードの音 ◎':'= つなぎの音'}。ギターだとここ(どれで弾いてもOK)↓</div>${melFret(m)}`;}
+  else h+=`マスをタップすると音を置ける/動かせる。音をタップして選ぶと、のばす・消すができて、ギターでどこを弾くかも出るよ。●は主音(曲の「家」の音)。</div>`;
+  box.innerHTML=h;
+  box.querySelectorAll('.ce').forEach(el=>el.addEventListener('click',()=>melTap(+el.dataset.c,+el.dataset.g)));
+  box.querySelectorAll('.mtools button').forEach(b=>b.addEventListener('click',()=>melTool(b.dataset.m)));
+}
+function melFret(m){
+  // 0〜12フレットで、その高さの音が出る場所を全部出す(いちばん低いフレットを塗りつぶし)
+  const F=12,ps=[];TUNING.forEach((o,s)=>{for(let mm=m-24;mm<=m;mm+=12){const f=mm-o;if(f>=0&&f<=F&&mm===m)ps.push({s,f});}});
+  // ギターは楽譜より1オクターブ低く鳴るので、1オクターブ下でも探す
+  if(!ps.length)TUNING.forEach((o,s)=>{const f=m-12-o;if(f>=0&&f<=F)ps.push({s,f});});
+  if(!ps.length)TUNING.forEach((o,s)=>{const f=m-24-o;if(f>=0&&f<=F)ps.push({s,f});});
+  const x=f=>f===0?2:(f-0.5)/F*94+4,y=s=>8+s*15;
+  let h='<div class="mfb">';for(let s=0;s<6;s++)h+=`<div class="st" style="top:${y(s)}px"></div>`;
+  for(let f=1;f<=F;f++)h+=`<div class="fr" style="left:${f/F*94+4}%"></div>`;
+  [3,5,7,9,12].forEach(f=>h+=`<div class="fn" style="left:${x(f)}%">${f}</div>`);
+  const best=ps.reduce((a,b)=>a&&a.f<=b.f?a:b,null);
+  ps.forEach(p=>h+=`<div class="dt ${p===best?'':'sub'}" style="left:${x(p.f)}%;top:${y(p.s)}px"></div>`);
+  return h+'</div>';
+}
+function melTap(c,g){
+  const mel=S.mel=S.mel||[];melPush();
+  const i=mel.findIndex(x=>x.c===c);
+  if(i>=0){if(mel[i].g===g){melSel=melSel===i?-1:i;melUndo.pop();}else{mel[i].g=g;melSel=i;melPreview(g);}}
+  else{
+    const h=mel.findIndex(x=>x.c<c&&x.c+x.d>c);let d=1;
+    if(h>=0){d=mel[h].c+mel[h].d-c;mel[h].d=c-mel[h].c;}
+    mel.push({c,d,g});mel.sort((a,b)=>a.c-b.c);melSel=mel.findIndex(x=>x.c===c);melPreview(g);
+  }
+  renderMel();
+}
+function melPreview(g){if(S.playing)return;initAudio();const t=ctx.currentTime+0.02;melVoice(t,melMidi(g),0.35);}
+function melTool(m){
+  const mel=S.mel=S.mel||[],n=melCols();
+  if(m==='play'){if(S.song){formTip('通し再生中だよ。');return;}if(S.playing)stop();else start();renderMel();return;}
+  if(m==='draft'){melPush();S.mel=mkDraft(melRole(S.secs[S.sec]&&S.secs[S.sec].name));melSel=-1;}
+  else if(m==='undo'){if(!melUndo.length)return;S.mel=melUndo.pop();melSel=-1;}
+  else{
+    if(melSel<0||!mel[melSel]){wzTip('先に音をタップして選んでね。');return;}
+    melPush();const x=mel[melSel],nx=mel[melSel+1];
+    if(m==='long'){const lim=(nx?nx.c:n)-x.c;if(x.d<lim)x.d++;else{if(nx&&nx.d>1&&x.d<8){x.d++;nx.c++;nx.d--;}else wzTip('次の音にぶつかるよ。次の音を消すか、ちぢめてね。');}}
+    else if(m==='short'){if(x.d>1)x.d--;}
+    else if(m==='del'){mel.splice(melSel,1);melSel=-1;}
+  }
+  renderMel();
+}
+function wzTip(t){const a=document.getElementById('wztip');if(a&&!$('wiz').hidden)a.textContent=t;else $('tip').textContent=t;}
+
+/* ================= v0.30 1曲つくる(ウィザード) ================= */
+const WKEY='solodachi-wiz-v1';
+const WZ_PICKS=['jrock90','heiseialt','ukrock','mellowgtr','reiwa','arena80'];
+const WZ_STEPS=['雰囲気','サビのコード','サビのメロディ','Aメロのコード','Aメロのメロディ','並べて聴く'];
+let W={step:0,all:false,cands:null};
+function parentOf(id){return Object.keys(SUBS).find(k=>(SUBS[k]||[]).some(x=>x.id===id));}
+function subObj(id){const k=parentOf(id);return k?SUBS[k].find(x=>x.id===id):null;}
+function minorish(){const m=MOODS[S.mood];return !m||!m.chord||m.chord[2]===3;}
+function progNames(arr){const keep=S.custom;S.custom=arr;const r=arr.map((_,i)=>chordAt(i).name).join(' – ');S.custom=keep;return r;}
+function secIdx(name){return S.secs.findIndex(x=>x.name===name);}
+function wzSave(){try{localStorage.setItem(WKEY,JSON.stringify({step:W.step}));}catch(e){}}
+function openWiz(fresh){
+  if(S.test)cancelTest();if(S.playing)stop();
+  if(fresh){
+    // 今の作りかけは、保存してない曲なら「保存した曲」に自動でしまってから始める
+    if(S.custom.length&&!S.songId&&(S.secs.length>1||(S.mel||[]).length||JSON.stringify(S.custom)!==JSON.stringify(presetsFor()[0][1]))){const x={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:('作りかけ(自動で保存)・'+defaultName()).slice(0,40),at:Date.now(),data:snap()};SONGS.unshift(x);saveSongs();renderSongs();}
+    S.songId=null;$('songname').value='';
+    S.secs=[{name:'Aメロ'}];S.sec=0;S.order=[0];S.up=0;S.lv=1;S.mel=[];
+    W={step:0,all:false,cands:null,dirty:true,keyDone:false};
+  }else{try{const o=JSON.parse(localStorage.getItem(WKEY)||'null');if(o&&o.step>=0&&o.step<WZ_STEPS.length)W.step=o.step;}catch(e){}}
+  $('start').hidden=true;$('wiz').hidden=false;renderWiz();
+}
+function closeWiz(){if(S.playing&&!S.song)stop();$('wiz').hidden=true;wzSave();refresh();renderStartWiz();}
+function wzGo(i){if(S.playing)stop();W.step=i;W.cands=null;melSel=-1;melUndo=[];wzEnter();wzSave();renderWiz();$('wiz').scrollTo(0,0);}
+// ステップに入ったときの準備
+function wzEnter(){
+  const st=W.step;
+  if(st===1){ // サビを作る(なければ)
+    if(W.dirty||secIdx('サビ')<0){W.dirty=false;S.secs=[{name:'サビ'}];S.sec=0;
+      if(!W.keyDone){const ks=minorish()?[9,4,2,7]:[0,7,2,9,4];S.key=ks[Math.floor(Math.random()*ks.length)];$('key').value=S.key;W.keyDone=true;}
+      S.secs=[{name:'サビ',custom:clone(S.custom),lens:S.custom.map(()=>null),meters:S.custom.map(()=>null),phr:0,bars:S.bars,up:0,lv:2,mel:[]}];S.order=[0];unstash(0);}
+    else{stash();unstash(secIdx('サビ'));}
+  }
+  if(st===2||st===4){const nm=st===2?'サビ':'Aメロ';stash();unstash(secIdx(nm));if(!S.mel.length)S.mel=mkDraft(st===2?'chorus':'verse');}
+  if(st===3){stash();
+    if(secIdx('Aメロ')<0){const sabi=S.secs[secIdx('サビ')].custom.join(),pl=presetsFor().filter(([,q])=>q.join()!==sabi);
+      const d=pl.length?[...pl[0][1]]:[...genProgression().d];
+      S.secs.push({name:'Aメロ',custom:d,lens:d.map(()=>null),meters:d.map(()=>null),phr:1,bars:S.bars,up:0,lv:0,mel:[]});}
+    unstash(secIdx('Aメロ'));}
+  if(st===5){stash();wzForm(W.lastUp!==false);unstash(secIdx('サビ'));}
+}
+// 並び:Aメロ → サビ → Aメロ → サビ(最後だけキーを上げるなら「ラスサビ」)
+function wzForm(up){
+  stash();W.lastUp=up;
+  let a=secIdx('Aメロ'),s=secIdx('サビ'),l=secIdx('ラスサビ');
+  if(up){const src=clone(S.secs[s]);if(l<0){S.secs.push({...src,name:'ラスサビ',up:1});l=S.secs.length-1;}else S.secs[l]={...src,name:'ラスサビ',up:1};}
+  else if(l>=0){S.secs.splice(l,1);a=secIdx('Aメロ');s=secIdx('サビ');l=-1;}
+  S.order=a>=0?[a,s,a,up?l:s]:[s];
+  unstash(S.sec<S.secs.length?S.sec:0);
+}
+function chooseProg(arr,label){
+  S.custom=[...arr];S.lens=arr.map(()=>null);S.meters=arr.map(()=>null);S.idx=0;S.mel=[];melSel=-1;
+  W.sel=label;stash();if(S.playing)stop();start();renderWiz();
+}
+function renderWiz(){
+  const st=W.step,box=$('wiz');
+  let h=`<div class="wzin"><div class="wzhead"><span>Solodachi 1曲つくる</span><button id="wzx">× とじる</button></div>
+    <div class="wzprog">${WZ_STEPS.map((_,i)=>`<i class="${i<=st?'d':''}"></i>`).join('')}</div>`;
+  const back=st>0?`<button class="wzghost" id="wzback">← もどる</button>`:'';
+  if(st===0){
+    const cur=S.sub;
+    h+=`<div class="wzq">どんな曲にする?</div><div class="wzh">ピンときたもの1つでOK。あとから変えられるよ。</div><div class="wzgrid">`;
+    WZ_PICKS.forEach(id=>{const x=subObj(id);if(!x)return;h+=`<button class="wzc ${cur===id?'on':''}" data-sub="${id}"><b>${x.name}</b><small>${x.era||''}${x.desc?'・'+x.desc.slice(0,18)+'…':''}</small></button>`;});
+    h+=`</div><button class="wzghost" id="wzall">${W.all?'▲ しまう':'ぜんぶ見る(細かいジャンル '+Object.values(SUBS).reduce((t,a)=>t+a.length,0)+'個)'}</button>`;
+    if(W.all){h+='<div class="wzall">';Object.keys(GENRES).forEach(k=>{const L=SUBS[k]||[];if(!L.length)return;h+=`<h4>${GENRES[k].name}</h4><div class="wzrow">`+L.map(x=>`<button class="wzchip ${cur===x.id?'on':''}" data-sub="${x.id}">${x.name}<small style="opacity:.7"> ${x.era||''}</small></button>`).join('')+'</div>';});h+='</div>';}
+    if(cur){h+=`<div class="wzh" style="margin-top:4px">気分</div><div class="wzrow">`+G().moods.slice(0,5).map(m=>`<button class="wzchip ${S.mood===m?'on':''}" data-mood="${m}">${MOODS[m].label}</button>`).join('')+'</div>';
+      h+=`<div class="wzh">テンポ ${S.bpm}(このジャンルのふつう)。キーは次の画面で弾きやすいところに自動で決めるよ。</div>`;}
+    h+=`<div class="wzfoot"><button class="wzbig" id="wznext" ${cur?'':'disabled style="opacity:.4"'}>次へ:サビのコード</button></div>`;
+  }
+  else if(st===1||st===3){
+    const nm=st===1?'サビ':'Aメロ',other=st===1?null:S.secs[secIdx('サビ')].custom.join();
+    if(!W.cands){W.cands=presetsFor().filter(([,q])=>q.join()!==other).slice(0,3).map(([l,q])=>[l,[...q]]);}
+    h+=`<div class="wzq">${nm}のコードを選ぼう</div><div class="wzh">${st===1?'▶で聴き比べて、いちばん「サビっぽい」と思ったもの。サビは曲でいちばん言いたいところ。':'Aメロはサビに向かって「ためる」ところ。サビと違う進行で、サビより落ち着いたものを選ぶとサビが引き立つ。'}</div>`;
+    const curj=S.custom.join();
+    W.cands.forEach(([l,q],i)=>{h+=`<button class="wzc wzcard ${q.join()===curj?'on':''}" data-cand="${i}"><span><b>${progNames(q)}</b><small>${l}</small></span><span class="wzplay">▶</span></button>`;});
+    h+=`<div class="wzrow"><button class="wzchip" id="wzgen">🎲 おまかせで作る</button><button class="wzchip" id="wzself">自分で並べる(くわしい画面へ)</button></div>`;
+    if(st===3)h+=`<div class="wzh" style="margin-top:4px">強さ(サビは「全開」にしてある)</div><div class="wzrow">`+LV_NAME.map((n,v)=>`<button class="wzchip ${S.lv===v?'on':''}" data-lv="${v}">${n}</button>`).join('')+'</div>';
+    h+=`<div class="wztip" id="wztip"></div><div class="wzfoot"><button class="wzbig" id="wznext">次へ:${nm}のメロディ</button>${back}</div>`;
+  }
+  else if(st===2||st===4){
+    const nm=st===2?'サビ':'Aメロ';
+    h+=`<div class="wzq">${nm}のメロディ</div><div class="wzh">おまかせで下書きしたよ。気に入らない音はマスをタップして動かそう。<b style="color:var(--chord)">オレンジの音</b>=そのときのコードの音(拍の頭に置くと「決まる」)、<b style="color:var(--scale)">緑の音</b>=つなぎの音。縦に並んでるのは今のキーで使える音だけだから、どこに置いても外れないよ。${st===2?'サビは高めの音が多いほど盛り上がる。':'Aメロはサビより低めにしておくと、サビで上がったときに気持ちいい。'}</div>
+      <div id="wzmel"></div><div class="wztip" id="wztip"></div>
+      <div class="wzfoot"><button class="wzbig" id="wznext">${st===2?'次へ:Aメロ':'次へ:並べて聴く'}</button>${back}</div>`;
+  }
+  else if(st===5){
+    const up=W.lastUp!==false;
+    h+=`<div class="wzq">1曲になった!</div><div class="wzh">おすすめの並びにしてある。▶で通して聴いてみよう。並びを変えたいときは、くわしい画面(作る ⑤)でできるよ。</div><div style="display:flex;flex-direction:column;gap:6px">`;
+    S.order.forEach((i,p)=>{const x=i===S.sec?S:S.secs[i];h+=`<div class="wzsec"><b>${p+1}. ${esc(S.secs[i].name)}</b><span style="font-size:12px">${(x.mel||[]).length}音</span><small>${LV_NAME[x.lv==null?1:x.lv]}${x.up?'・キー+'+x.up:''}</small></div>`;});
+    h+=`</div><button class="wzc" id="wzup"><b>${up?'☑':'☐'} 最後のサビだけキーを半音上げる</b><small>「ラスサビ転調」。J-POPやバラードの定番の盛り上げ方</small></button>
+      <label class="f" style="margin-top:4px">曲の名前<input class="txt" id="wzname" maxlength="40" placeholder="空なら自動でつけるよ" value="${esc($('songname').value||'')}"></label>
+      <div class="wztip" id="wztip"></div>
+      <div class="wzfoot"><button class="wzbig" id="wzsong">${S.song?'■ 止める':'▶ 通して聴く'}</button><button class="wzghost" id="wzsave">保存する</button><button class="wzghost" id="wzplayit">この曲に合わせて弾いてみる →</button>${back}</div>`;
+  }
+  h+='</div>';box.innerHTML=h;
+  const on=(id,f)=>{const e=document.getElementById(id);if(e)e.addEventListener('click',f);};
+  on('wzx',closeWiz);on('wzback',()=>wzGo(st-1));
+  box.querySelectorAll('[data-sub]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.sub;setGenre(parentOf(id),id);W.keyDone=false;W.dirty=true;renderWiz();}));
+  box.querySelectorAll('[data-mood]').forEach(b=>b.addEventListener('click',()=>{S.mood=b.dataset.mood;buildMood();buildProg();setCustom(presetsFor()[0][1]);W.keyDone=false;W.dirty=true;renderWiz();}));
+  on('wzall',()=>{W.all=!W.all;renderWiz();});
+  box.querySelectorAll('[data-cand]').forEach(b=>b.addEventListener('click',()=>{const c=W.cands[+b.dataset.cand];chooseProg(c[1],c[0]);}));
+  on('wzgen',()=>{const r=genProgression();W.cands.push(['おまかせ:'+r.note,[...r.d]]);if(W.cands.length>5)W.cands.splice(3,1);chooseProg(r.d,'おまかせ');});
+  on('wzself',()=>{closeWiz();switchTab('make');$('tip').textContent='下のボタンでコードを足して、自分の進行を作ろう。できたら「今日は何する?」の「1曲つくる → 続き」で戻れるよ。';});
+  box.querySelectorAll('[data-lv]').forEach(b=>b.addEventListener('click',()=>{S.lv=+b.dataset.lv;stash();if(ctx)setEnergy(ctx.currentTime);renderWiz();}));
+  on('wznext',()=>{if(st===0&&!S.sub)return;if((st===1||st===3)&&!S.custom.length)return;wzGo(st+1);});
+  on('wzup',()=>{wzForm(!(W.lastUp!==false));renderWiz();});
+  on('wzsong',()=>{if(S.song){stop();renderWiz();return;}playSong();$('wiz').hidden=false;renderWiz();});
+  on('wzsave',()=>{const nm=document.getElementById('wzname').value.trim();
+    if(S.songId&&SONGS.some(x=>x.id===S.songId)){const x=SONGS.find(x=>x.id===S.songId);if(nm)x.name=nm.slice(0,40);x.data=snap();x.at=Date.now();saveSongs();renderSongs();wzTip(`「${x.name}」を上書き保存したよ。`);}
+    else{$('songname').value=nm;$('savebtn').click();wzTip($('savetip').textContent);}});
+  on('wzplayit',()=>{closeWiz();switchTab('play');$('fbk').textContent='作った曲だよ。「▶ 通しで再生」で最初から、セクションを選んで「▶ 伴奏」でそこだけ練習できる。メロディを弾いてみたいときは、パートの「メロ」をオンのまま、聞こえた音を探してみよう。';});
+  if(st===2||st===4)renderMel();
+}
+function renderStartWiz(){let o=null;try{o=JSON.parse(localStorage.getItem(WKEY)||'null');}catch(e){}
+  const ok=o&&o.step>0&&secIdx('サビ')>=0;$('startwizcont').hidden=!ok;
+  if(ok)$('startwizcontn').textContent=`「${WZ_STEPS[o.step]}」から再開`;}
+$('startwiz').addEventListener('click',()=>openWiz(true));
+$('startmore').addEventListener('click',()=>{const bx=$('startmorebox');bx.hidden=!bx.hidden;$('startmore').textContent=bx.hidden?'ほかのこと(くわしく作る・おまかせ・学ぶ・卒業テスト)▼':'しまう ▲';});
+$('startwizcont').addEventListener('click',()=>openWiz(false));
+
 /* ================= 操作 ================= */
 $('pickmode').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
   if(b.dataset.m==='artist'){if(S.genre!=='artist')setGenre('artist',SUBS.artist[0].id);}
@@ -2357,7 +2704,7 @@ try{const L=JSON.parse(localStorage.getItem(LKEY)||'null');
   if(L&&applySnap(L)){S.songId=(L.songId&&SONGS.some(x=>x.id===L.songId))?L.songId:null;
     const cur=SONGS.find(x=>x.id===S.songId);if(cur)$('songname').value=cur.name;
     $('tip').textContent='前回の続きを読み込んだよ。';}}catch(e){}
-renderSongs();
+renderSongs();renderStartWiz();
 </script>
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
