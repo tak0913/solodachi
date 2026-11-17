@@ -59,6 +59,7 @@ input[type=range]{width:100%;accent-color:var(--chord)}
 .bc small{display:block;font-size:10px;color:var(--muted)}
 .bc em{display:block;font-style:normal;font-size:10px;color:var(--scale)}
 .bc:active{background:#ffc979}
+.bc.spc{border-style:dashed;border-color:var(--acc)}
 .sm{flex:1;padding:9px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:13px;cursor:pointer}
 .tip{font-size:12px;color:var(--muted);margin-top:8px;min-height:18px}
 .levels{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
@@ -284,7 +285,7 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
 </head>
 <body>
 <header class="top">
-  <div class="brand">Solodachi <span>v0.24</span></div>
+  <div class="brand">Solodachi <span>v0.25</span></div>
   <div class="nowc" id="nowchord"></div>
   <button class="play" id="play">▶ 伴奏</button>
 </header>
@@ -437,6 +438,12 @@ select,#songname{background:var(--card);color:var(--text);border-color:var(--lin
       <button class="sm" id="secren">名前</button>
       <button class="sm" id="secdel">消す</button>
     </div>
+    <div class="ttl" style="margin-top:12px"><span>このセクションの強さ <span class="en">dynamics</span></span></div>
+    <div class="secs" id="seclv"></div>
+    <div class="note" style="margin:4px 0 0">静か=ドラムをそっと・ギター小さめ(シンバルなし)。全開=全部大きく、コードが変わるたびにシンバル。Aメロを「静か」、サビを「全開」にすると、同じ進行でも落差でドラマになる(90年代オルタナやパワーバラードの作り方)。</div>
+    <div class="ttl" style="margin-top:12px"><span>このセクションのキー <span class="en">key change</span></span></div>
+    <div class="secs" id="secup"></div>
+    <div class="note" style="margin:4px 0 0">最後のサビだけキーを半音か1音上げる「ラスサビ転調」はJ-POPやパワーバラードの定番。上げたセクションでは光る指板も上がったキーで光るよ。</div>
     <div class="ttl" style="margin-top:12px"><span>並び順(タップで外す)</span></div>
     <div class="secs" id="orderlist"></div>
     <div class="ttl" style="margin-top:8px"><span>並びの最後に足す</span></div>
@@ -1056,7 +1063,7 @@ const MAXC=16;
 
 const S={genre:'pops',sub:null,key:0,mood:'major',prog:0,bpm:100,bars:2,level:1,playing:false,idx:0,peek:false,
   phr:0,pick:'genre',stats:{g:0,o:0,x:0},custom:[0,4,5,3],lens:[null,null,null,null],meter:'4/4',meters:[null,null,null,null],mute:{drums:false,bass:false,gtr:false},
-  secs:[{name:'Aメロ'}],sec:0,order:[0],song:null};
+  secs:[{name:'Aメロ'}],sec:0,order:[0],song:null,up:0,lv:1};
 const $=id=>document.getElementById(id);
 function curSub(){return S.sub?(SUBS[S.genre]||[]).find(x=>x.id===S.sub):null;}
 function G(){const b=GENRES[S.genre],x=curSub();if(!x)return b;
@@ -1082,7 +1089,7 @@ function palette(){
   });
 }
 function chordFromPal(i){
-  const p=palette()[i]||palette()[0],root=(S.key+p.r)%12;
+  const p=palette()[i]||palette()[0],root=(KEY()+p.r)%12;
   return {...p,i,root,pcs:QI[p.q].map(x=>(root+x)%12),name:NOTES[root]+QN[p.q]};
 }
 function chordAt(i){const e=S.custom[i%S.custom.length];return typeof e==='object'?chordFromObj(e):chordFromPal(e);}
@@ -1117,8 +1124,11 @@ function renderLenRow(){
     const was=S.playing;if(was)stop();S.lens[S.idx]=v;renderChips();renderLenRow();if(was)start();
   }));
 }
-function chordFromObj(e){const root=(S.key+e.r)%12;return {...e,i:-1,root,pcs:QI[e.q].map(x=>(root+x)%12),name:NOTES[root]+QN[e.q]};}
-function scalePcs(){return SCALES[S.mood].map(x=>(S.key+x)%12);}
+function chordFromObj(e){const root=(KEY()+e.r)%12;return {...e,i:-1,root,pcs:QI[e.q].map(x=>(root+x)%12),name:NOTES[root]+QN[e.q]};}
+function scalePcs(){return SCALES[S.mood].map(x=>(KEY()+x)%12);}
+// v0.25:セクションごとの転調。S.up=今のセクションでキーを何半音上げるか(ラスサビ転調用)
+function KEY(){return (S.key+(S.up||0))%12;}
+function keyLabel(){return NOTES[KEY()]+(S.up?`(+${S.up})`:'');}
 function classify(pc,ch){
   if(pc===ch.root)return 'root';
   if(ch.pcs.includes(pc))return 'chord';
@@ -1185,16 +1195,28 @@ function renderPick(){
 }
 function renderGenreButtons(){document.querySelectorAll('.gb').forEach(b=>b.classList.toggle('on',b.dataset.g===S.genre));}
 function renderTracks(){document.querySelectorAll('.trk').forEach(b=>b.classList.toggle('off',S.mute[b.dataset.t]));}
+// v0.25:小さいコードスイッチ。気分の7音の外から「よく使われる1個」だけ借りてくる
+//  マイナー系で v がマイナーなら → V(メジャー):主音に強く戻りたくなる「泣き」(Lucid Dreams・Muse)
+//  メジャー系で IV がメジャーなら → iv(マイナー):IV→iv の切ない落とし方(Oasis・Aerosmith「Crazy」)
+function spicePal(){
+  const g=G();if(g.style==='blues'||g.style==='power')return [];
+  const pl=palette(),out=[],st=g.style;
+  const v=pl[4],iv=pl[3],minor3=p=>QI[p.q]&&QI[p.q][1]===3;
+  if(v&&v.r===7&&minor3(v))out.push({r:7,q:st==='seventh'?'7':st==='add9'?'add9':'',ro:'V'+(st==='seventh'?'7':''),role:'スパイス(泣きのV。早くiに帰りたくなる)',spice:true});
+  if(iv&&iv.r===5&&!minor3(iv))out.push({r:5,q:st==='seventh'?'m7':st==='add9'?'madd9':'m',ro:'iv'+(st==='seventh'?'7':''),role:'スパイス(IVのあとに置くと切なく落ちる)',spice:true});
+  return out;
+}
 function renderBuilder(){
+  const sp=spicePal();
   $('builder').innerHTML=palette().map((p,i)=>{
     const ch=chordFromPal(i);
     return `<button class="bc" data-i="${i}"><b>${ch.name}</b><small>${p.ro}</small><em>${p.role}</em></button>`;
-  }).join('');
+  }).join('')+sp.map((p,j)=>{const ch=chordFromObj(p);return `<button class="bc spc" data-s="${j}"><b>${ch.name}</b><small>${p.ro}</small><em>${p.role}</em></button>`;}).join('');
   $('builder').querySelectorAll('.bc').forEach(b=>b.addEventListener('click',()=>{
     if(S.custom.length>=MAXC){$('tip').textContent=`${MAXC}個までだよ。「最後を消す」で減らしてね。`;return;}
-    const i=+b.dataset.i;S.custom.push(i);S.lens.push(null);S.meters.push(null);
-    const ch=chordFromPal(i);
-    $('tip').textContent=`${ch.name}(${ch.ro})を追加:「${ch.role}」の役割のコード。`+tipFor();
+    const isSp=b.dataset.s!=null,i=isSp?{...sp[+b.dataset.s]}:+b.dataset.i;S.custom.push(i);S.lens.push(null);S.meters.push(null);
+    const ch=isSp?chordFromObj(i):chordFromPal(i);
+    $('tip').textContent=isSp?`${ch.name}(${ch.ro})を追加:キーの外から借りてきたスパイス。${i.r===7?'iの直前に置くと「帰りたい」力がいちばん強くなる。':'同じ根っこのメジャー(IV)のすぐあとに置くと効く。'}`:`${ch.name}(${ch.ro})を追加:「${ch.role}」の役割のコード。`+tipFor();
     if(!S.playing)S.idx=S.custom.length-1;
     renderChips();renderBoard();renderWhy();
   }));
@@ -1262,8 +1284,8 @@ function renderWhy(){
   const g=G(),ch=chordAt(S.idx),p=S.custom,nx=chordAt((S.idx+1)%p.length);
   const names=ch.pcs.map(pc=>NOTES[pc]).join('・'),jp=ch.pcs.map(pc=>JP[pc]).join('・');
   $('gbox').innerHTML=`<div class="gbox"><b>${g.name}${g.era?'('+g.era+')':''}のポイント</b><p>${g.desc}</p><p>${g.point}</p></div>`;
-  $('keyline').textContent=`キー:${NOTES[S.key]} ${moodName()} / ${SCALE_NAME[S.mood]}の音:${scalePcs().map(x=>NOTES[x]).join(' ')}`;
-  $('keyname').textContent=`キー ${NOTES[S.key]} ${moodName()}`;
+  $('keyline').textContent=`キー:${keyLabel()} ${moodName()} / ${SCALE_NAME[S.mood]}の音:${scalePcs().map(x=>NOTES[x]).join(' ')}`;
+  $('keyname').textContent=`キー ${keyLabel()} ${moodName()}`;
   let h=`<p><b>今のコード:${ch.name}(${ch.ro})</b>  役割:「${ch.role}」</p>`;
   if(ch.spice)h+=`<p>このコードはキーの外から借りてきた「スパイス」。スケールにない音も、今はコードの音だからオレンジで光って◎になる。次のコードへ強く引っぱる力があって、最近のJ-POPでよく使われる手だよ。</p>`;
   if(S.level<=2){
@@ -1272,7 +1294,7 @@ function renderWhy(){
     h+=`<p><b class="r">赤</b>はその中で一番大事な「ルート(root)」。迷ったらここに戻ればいい。</p>`;
     if(S.level===1){
       if(S.mood==='blues')h+=`<p><b class="s">緑の輪</b>はブルーススケールの音。明るい ${ch.name} の上で、わざと暗めの音を鳴らすのがブルースの味。</p>`;
-      else h+=`<p><b class="s">緑の輪</b>は ${NOTES[S.key]}${SCALE_NAME[S.mood]}(scale)の残りの音。つなぎに使うと自然に聞こえる。</p>`;
+      else h+=`<p><b class="s">緑の輪</b>は ${NOTES[KEY()]}${SCALE_NAME[S.mood]}(scale)の残りの音。つなぎに使うと自然に聞こえる。</p>`;
     }else h+=`<p>スケールの音(つなぎの音)は消してある。オレンジとオレンジの間を、耳で探してつないでみて。</p>`;
   }else{
     h+=`<p>光は減らしてある。${ch.name} の音(${names})を思い出しながら弾いてみて。迷ったら「のぞく」を押せばOK。</p>`;
@@ -1449,7 +1471,12 @@ function tap(s,f,c){
 
 /* ================= 音づくり ================= */
 let trim,ctx,master,backing,revSend,conv,dlySend,dlyNode,noiseBuf,bkChain,leadChain,timer,nextTime,step,lastStrum=null;
-const buses={};
+const buses={},ener={};
+// v0.25:セクションの強さ(0=静か/1=ふつう/2=全開)。パートごとの音量の倍率
+const LV=[{drums:0.5,bass:0.8,gtr:0.55},{drums:1,bass:1,gtr:1},{drums:1.2,bass:1.12,gtr:1.3}];
+const LV_NAME=['静か','ふつう','全開'];
+let NRG=1;
+function setEnergy(t){if(!ener.drums)return;const L=LV[S.lv==null?1:S.lv];['drums','bass','gtr'].forEach(k=>{const g=ener[k].gain;g.cancelScheduledValues(t);g.setValueAtTime(L[k],t);});}
 const mtof=m=>440*Math.pow(2,(m-69)/12);
 // iPhoneでマナーモードでも鳴らす&アプリ版で音が止まるのを防ぐ
 const SILENT_WAV='data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YUAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
@@ -1473,7 +1500,8 @@ function initAudio(){
   backing=ctx.createGain();backing.gain.value=$('vol').value/100;backing.connect(trim);
   conv=ctx.createConvolver();conv.buffer=makeIR(2.8);
   revSend=ctx.createGain();revSend.connect(conv);conv.connect(backing);
-  ['drums','bass','gtr'].forEach(k=>{const g=ctx.createGain();g.gain.value=S.mute[k]?0:1;g.connect(backing);buses[k]=g;});
+  ['drums','bass','gtr'].forEach(k=>{const e=ctx.createGain();e.connect(backing);ener[k]=e;const g=ctx.createGain();g.gain.value=S.mute[k]?0:1;g.connect(e);buses[k]=g;});
+  setEnergy(ctx.currentTime);
   buses.drums.connect(revSend);buses.gtr.connect(revSend);
   // v0.22:ギターだけにかかるディレイ(やまびこ)。付点8分(3/4拍)で、少しずつ小さく・こもりながらくり返す
   dlySend=ctx.createGain();dlySend.gain.value=0;dlyNode=ctx.createDelay(2);
@@ -1555,6 +1583,7 @@ function chokeStrum(t,tau){
 
 /* --- ドラム --- */
 function kick(t,v=1){
+  if(NRG===0)v*=0.7;
   const o=ctx.createOscillator(),g=ctx.createGain();
   o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(48,t+0.09);
   env(g,t,v,0.003,0.3);o.connect(g);g.connect(buses.drums);o.start(t);o.stop(t+0.4);
@@ -1562,6 +1591,7 @@ function kick(t,v=1){
   const cg=ctx.createGain();env(cg,t,0.25*v,0.001,0.012);n.connect(hp);hp.connect(cg);cg.connect(buses.drums);n.start(t,Math.random());n.stop(t+0.03);
 }
 function snare(t,v=1,len=1){
+  if(NRG===0){v*=0.45;len*=0.6;}
   const n=ctx.createBufferSource();n.buffer=noiseBuf;
   const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1900;bp.Q.value=0.7;
   const g=ctx.createGain();env(g,t,0.55*v,0.002,0.18*len);
@@ -1580,6 +1610,7 @@ const hatC=(t,v)=>metallic(t,0.05,v);
 const hatO=(t,v)=>metallic(t,0.3,v);
 const ride=(t,v)=>metallic(t,0.45,v*0.8,5200,3000);
 function crash(t,v){
+  if(NRG===0)return;
   metallic(t,1.6,v,8000,4000);
   const n=ctx.createBufferSource();n.buffer=noiseBuf;const hp=ctx.createBiquadFilter();hp.type='highpass';hp.frequency.value=5000;
   const g=ctx.createGain();env(g,t,0.3*v,0.002,1.3);n.connect(hp);hp.connect(g);g.connect(buses.drums);n.start(t);n.stop(t+1.5);
@@ -1860,9 +1891,23 @@ function scheduleStep(s,t0){
   if(inChord===0)setTimeout(()=>{if(S.playing){S.idx=ci;renderChips();renderBoard();renderWhy();renderPhrase();}},Math.max(0,(t-ctx.currentTime)*1000));
   const c={t,b,sp,per,ch,vo:voicing(ch),root:36+ch.root,chStart:inChord===0,first,M,inChord};
   const ph=m==='4/4'?curPhrase():null;
-  quietGtr=!!ph;
-  try{if(m==='4/4')PAT[patKey()](c);else ODD(c);}finally{quietGtr=false;}
+  if(first)setEnergy(t);
+  NRG=S.lv==null?1:S.lv;quietGtr=!!ph;
+  try{if(m==='4/4')PAT[patKey()](c);else ODD(c);
+    // v0.25:通し再生でセクションに入った瞬間のシンバル/全開はコードが変わるたびにシンバル
+    if(first&&S.song&&NRG>=1&&S.song.pos>0)crash(t,0.5);
+    else if(c.chStart&&NRG===2)crash(t,0.45);
+    if(S.song)fill(s,t,sp);
+  }finally{quietGtr=false;NRG=1;}
   if(ph)playPhrase(c,ph);
+}
+// v0.25:通し再生で、次のセクションが同じかそれ以上の強さなら、最後の1拍で「タカタカ」とフィルを入れる
+function nextSongSec(){const sg=S.song;if(!sg)return null;let p=sg.pos+1;while(p<S.order.length&&!S.secs[S.order[p]].custom.length)p++;return p<S.order.length?S.secs[S.order[p]]:null;}
+function fill(s,t,sp){
+  const tot=totalSteps(),left=tot-(s%tot);if(left>4||s<tot-4)return;
+  const nx=nextSongSec();if(!nx)return;
+  const nl=nx.lv==null?1:nx.lv,cl=S.lv==null?1:S.lv;if(nl<cl||nl===0)return;
+  const k=4-left;snare(t,0.45+k*0.15);if(nl===2&&k===3)snare(t+sp/2,0.9);
 }
 function scheduler(){
   while(nextTime<ctx.currentTime+0.12){
@@ -1887,7 +1932,7 @@ function curPhrase(){const L=G().phrases;return L&&L.length?L[S.phr%L.length]:nu
 // v0.20:単音の音がキーとコードから外れていたら半音ずらして寄せる(コードの音を優先)
 function fitN(n,ch){
   const sc=MOODS[S.mood]&&MOODS[S.mood].chord;if(!sc)return n;
-  const key=sc.map(x=>(S.key+x)%12),pc=(ch.root+n)%12,ok=q=>ch.pcs.includes(q)||key.includes(q);
+  const key=sc.map(x=>(KEY()+x)%12),pc=(ch.root+n)%12,ok=q=>ch.pcs.includes(q)||key.includes(q);
   if(ok(pc))return n;
   for(const d of [-1,1])if(ch.pcs.includes((pc+d+12)%12))return n+d;
   for(const d of [-1,1])if(key.includes((pc+d+12)%12))return n+d;
@@ -1925,7 +1970,7 @@ function evPos(e,ch,vo){
   if(set==='dyad'){const r=vo[0]+n;return [at(r,{s:5,f:r-40}),at(r+(e.n2||7),posFor(r+(e.n2||7),f0))];}
   if(set==='drone'){
     const low=[0,1,2,3].filter(i=>i<vo.length).map(i=>at(vo[i],voPos(vo,i)||posFor(vo[i],f0)));
-    const f2=(S.key+7-11+24)%12,f1=(S.key-4+12)%12;
+    const f2=(KEY()+7-11+24)%12,f1=(KEY()-4+12)%12;
     return [...low,at(59+f2,{s:1,f:f2}),at(64+f1,{s:0,f:f1})];
   }
   const all=vo.map((_,i)=>i);
@@ -1987,7 +2032,7 @@ function renderPhrase(){
   $('phchord').textContent=`今のコード ${ch.name} の場合`;
   const sc=MOODS[S.mood]&&MOODS[S.mood].chord,num=ph.ev.filter(e=>e.k==='n'&&typeof e.n==='number');
   const moved=num.filter(e=>!e.raw&&fitN(e.n,ch)!==e.n).length;
-  const outs=sc?num.filter(e=>e.raw&&!ch.pcs.includes((ch.root+e.n)%12)&&!sc.map(x=>(S.key+x)%12).includes((ch.root+e.n)%12)).length:0;
+  const outs=sc?num.filter(e=>e.raw&&!ch.pcs.includes((ch.root+e.n)%12)&&!sc.map(x=>(KEY()+x)%12).includes((ch.root+e.n)%12)).length:0;
   const fit=$('phfit');
   if(moved){fit.hidden=false;fit.textContent=`このキー(${moodName()})と ${ch.name} に合わせて、${moved}個の音を半音ずらしてるよ。外れた音を、いちばん近いコードの音かキーの音に寄せる。自分で作るときも同じ考え方でOK。`;}
   else if(outs){fit.hidden=false;fit.textContent=`このフレーズは、わざとキーの外の音を${outs}個使ってる(ブルーノートなど)。ぶつかる響きが持ち味だから、直さずにそのまま弾こう。`;}
@@ -1998,11 +2043,13 @@ $('phnext').addEventListener('click',()=>{const L=(G().phrases||[]).length;if(!L
 
 
 /* ================= 曲の形(セクションと並び順) ================= */
-const MAXSEC=8,MAXORD=32,SEC_NAMES=['イントロ','Aメロ','Bメロ','サビ','間奏','アウトロ'];
+const MAXSEC=8,MAXORD=32,SEC_NAMES=['イントロ','Aメロ','Bメロ','サビ','サビ後','間奏','アウトロ'];
+// 新しく足したセクションの最初の強さ(サビとサビ後は全開)
+const SEC_LV={'サビ':2,'サビ後':2};
 const clone=x=>JSON.parse(JSON.stringify(x));
 // 今いじっているセクションの中身は S.custom などに出してある。切り替えるときにしまう/出す
-function stash(){Object.assign(S.secs[S.sec],{custom:clone(S.custom),lens:[...S.lens],meters:[...S.meters],phr:S.phr,bars:S.bars});}
-function unstash(i){const x=S.secs[i];S.sec=i;S.custom=clone(x.custom);S.lens=[...x.lens];S.meters=[...x.meters];S.phr=x.phr||0;S.bars=x.bars;S.idx=0;$('bars').value=String(S.bars);}
+function stash(){Object.assign(S.secs[S.sec],{custom:clone(S.custom),lens:[...S.lens],meters:[...S.meters],phr:S.phr,bars:S.bars,up:S.up||0,lv:S.lv==null?1:S.lv});}
+function unstash(i){const x=S.secs[i];S.sec=i;S.custom=clone(x.custom);S.lens=[...x.lens];S.meters=[...x.meters];S.phr=x.phr||0;S.bars=x.bars;S.up=x.up||0;S.lv=x.lv==null?1:x.lv;S.idx=0;$('bars').value=String(S.bars);}
 function secSteps(i){const x=i===S.sec?S:S.secs[i];let t=0;(x.custom||[]).forEach((_,j)=>{const l=x.lens[j];t+=Math.max(1,Math.round(METERS[x.meters[j]||S.meter].steps*(l==null?x.bars:l)));});return t;}
 function songSteps(){return S.order.reduce((t,i)=>t+secSteps(i),0);}
 function fmtLen(st){const sec=Math.round(st*60/S.bpm/4);return sec>=60?`${Math.floor(sec/60)}分${sec%60}秒`:`${sec}秒`;}
@@ -2010,7 +2057,12 @@ function renderFormLen(){const el=$('formlen');if(el)el.textContent=`通しで�
 function formTip(t){$('formtip').textContent=t;}
 function renderForm(){
   const sg=S.song,many=S.secs.length>1;
-  $('seclist').innerHTML=S.secs.map((x,i)=>`<button class="sc ${i===S.sec?'on':''}" data-i="${i}">${esc(x.name)}<small>${fmtLen(secSteps(i))}</small></button>`).join('');
+  const tag=i=>{const x=i===S.sec?S:S.secs[i],l=x.lv==null?1:x.lv;return (l!==1?LV_NAME[l]:'')+(x.up?`${l!==1?'・':''}キー+${x.up}`:'');};
+  $('seclist').innerHTML=S.secs.map((x,i)=>`<button class="sc ${i===S.sec?'on':''}" data-i="${i}">${esc(x.name)}<small>${fmtLen(secSteps(i))}${tag(i)?' '+tag(i):''}</small></button>`).join('');
+  $('seclv').innerHTML=LV_NAME.map((n,v)=>`<button class="sc ${(S.lv==null?1:S.lv)===v?'on':''}" data-v="${v}">${n}</button>`).join('');
+  $('secup').innerHTML=[[0,'そのまま'],[1,'半音上げる(+1)'],[2,'1音上げる(+2)']].map(([v,n])=>`<button class="sc ${(S.up||0)===v?'on':''}" data-v="${v}">${n}</button>`).join('');
+  $('seclv').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setLv(+b.dataset.v)));
+  $('secup').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setUp(+b.dataset.v)));
   $('secadd').innerHTML=SEC_NAMES.map(n=>`<button class="sc add" data-n="${n}">+ ${n}</button>`).join('');
   $('orderlist').innerHTML=S.order.map((i,p)=>`<button class="sc ${sg&&sg.pos===p?'on':''}" data-p="${p}">${p+1}. ${esc(S.secs[i].name)}</button>`).join('');
   $('orderadd').innerHTML=S.secs.map((x,i)=>`<button class="sc add" data-i="${i}">+ ${esc(x.name)}</button>`).join('');
@@ -2019,7 +2071,7 @@ function renderForm(){
   // 「弾く」タブの上の帯
   let h;
   if(sg)h=S.order.map((i,p)=>`<span class="sc ${sg.pos===p?'on':''}">${p+1}. ${esc(S.secs[i].name)}</span>`).join('')+`<button class="sc thru" data-a="stop">■ 止める</button>`;
-  else if(many)h=S.secs.map((x,i)=>`<button class="sc ${i===S.sec?'on':''}" data-i="${i}">${esc(x.name)}</button>`).join('')+`<button class="sc thru" data-a="thru">▶ 通しで再生</button>`;
+  else if(many)h=S.secs.map((x,i)=>`<button class="sc ${i===S.sec?'on':''}" data-i="${i}">${esc(x.name)}${tag(i)?`<small>${tag(i)}</small>`:''}</button>`).join('')+`<button class="sc thru" data-a="thru">▶ 通しで再生</button>`;
   else h=`<button class="sc on" data-i="0">${esc(S.secs[0].name)}</button><button class="sc add" data-a="form">+ セクションを足して曲にする</button>`;
   $('secbar').innerHTML=h;
   $('seclist').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>goSec(+b.dataset.i)));
@@ -2043,6 +2095,18 @@ function goSec(i){
 formTip(`「${S.secs[i].name}」に切り替えたよ。③のコードと、「弾く」のフレーズはこのセクションのもの。`);
   refresh();if(was&&S.custom.length)start();
 }
+function setLv(v){
+  if(S.song){formTip('通し再生中は変えられないよ。いったん止めてね。');return;}
+  S.lv=v;stash();if(ctx)setEnergy(ctx.currentTime);
+  formTip(`「${S.secs[S.sec].name}」の強さを「${LV_NAME[v]}」にしたよ。`+(v===0?'ほかのセクションを「全開」にすると落差が出る。':v===2?'前のセクションを「静か」か「ふつう」にしておくと、ここで爆発して聞こえる。':''));
+  renderForm();
+}
+function setUp(v){
+  if(S.song){formTip('通し再生中は変えられないよ。いったん止めてね。');return;}
+  if(S.test)cancelTest();
+  S.up=v;stash();refresh();
+  formTip(v?`「${S.secs[S.sec].name}」だけキーを${v===1?'半音':'1音'}上げたよ(${NOTES[S.key]}→${NOTES[KEY()]})。並びの最後のサビに使うと「ラスサビ転調」になる。`:`「${S.secs[S.sec].name}」のキーを元に戻したよ。`);
+}
 function uniqName(n){let k=n,c=2;while(S.secs.some(x=>x.name===k))k=n+(c++);return k;}
 function addSec(name,copy){
   if(S.secs.length>=MAXSEC){formTip(`セクションは${MAXSEC}個までだよ。`);return;}
@@ -2054,7 +2118,7 @@ function addSec(name,copy){
   if(copy)x={...clone(S.secs[S.sec]),name:nm};
   else{const pl=presetsFor(),used=S.secs.map(y=>(y.custom||[]).join()),fresh=pl.find(([,q])=>!used.includes(q.join())),L=(G().phrases||[]).length;
     let d=fresh?[...fresh[1]]:null;for(let k=0;!d&&k<8;k++){const r=genProgression().d;if(k===7||!used.includes(r.join()))d=[...r];}
-    x={name:nm,custom:d,lens:d.map(()=>null),meters:d.map(()=>null),phr:L?n%L:0,bars:S.bars};}
+    x={name:nm,custom:d,lens:d.map(()=>null),meters:d.map(()=>null),phr:L?n%L:0,bars:S.bars,up:0,lv:SEC_LV[name]==null?1:SEC_LV[name]};}
   S.secs.push(x);
   if(S.order.length<MAXORD)S.order.push(n);
   unstash(n);
@@ -2126,7 +2190,7 @@ let SONGS=[];try{const a=JSON.parse(localStorage.getItem(SKEY)||'[]');if(Array.i
 function saveSongs(){try{localStorage.setItem(SKEY,JSON.stringify(SONGS));return true;}catch(e){return false;}}
 function snap(){
   stash();
-  return {secs:clone(S.secs),order:[...S.order],sec:S.sec,form:S.order.map(i=>S.secs[i].name),genre:S.genre,sub:S.sub,key:S.key,mood:S.mood,bpm:S.bpm,bars:S.bars,meter:S.meter,phr:S.phr,
+  return {secs:clone(S.secs),order:[...S.order],sec:S.sec,form:S.order.map(i=>S.secs[i].name),genre:S.genre,sub:S.sub,key:S.key,mood:S.mood,bpm:S.bpm,bars:S.bars,meter:S.meter,phr:S.phr,up:S.up||0,lv:S.lv==null?1:S.lv,
     custom:JSON.parse(JSON.stringify(S.custom)),lens:[...S.lens],meters:[...S.meters],
     names:S.custom.map((_,i)=>chordAt(i).name),gname:G().name,mname:moodName()};
 }
@@ -2148,7 +2212,7 @@ function applySnap(o){
   S.key=o.key;S.bpm=(o.bpm>=40&&o.bpm<=300)?o.bpm:g.bpm;S.meter=o.meter;
   // セクション(昔の保存データは進行1つだけなので、それを「Aメロ」1つとして開く)
   const mk=(x,nm)=>{const c=clone(x.custom),f=a=>c.map((_,i)=>a&&a[i]!=null?a[i]:null);
-    return {name:String(x.name||nm).slice(0,12),custom:c,lens:f(x.lens),meters:f(x.meters).map(m=>m&&METERS[m]?m:null),phr:x.phr||0,bars:[0.25,0.5,1,2,4].includes(x.bars)?x.bars:g.bars};};
+    return {name:String(x.name||nm).slice(0,12),custom:c,lens:f(x.lens),meters:f(x.meters).map(m=>m&&METERS[m]?m:null),phr:x.phr||0,bars:[0.25,0.5,1,2,4].includes(x.bars)?x.bars:g.bars,up:[0,1,2,3].includes(x.up)?x.up:0,lv:[0,1,2].includes(x.lv)?x.lv:1};};
   if(Array.isArray(o.secs)&&o.secs.length){
     S.secs=o.secs.map((x,i)=>mk(x,'セクション'+(i+1)));
     S.sec=(Number.isInteger(o.sec)&&o.sec>=0&&o.sec<S.secs.length)?o.sec:0;
